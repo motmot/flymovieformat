@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=fmf_plottimestamps
+MimeType=video/fmf
+Exec=/usr/bin/fmf_plottimestamps %f
+Type=Application

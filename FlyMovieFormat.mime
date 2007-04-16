@@ -1,0 +1,1 @@
+video/fmf; /usr/bin/playfmf %s; test=test -n "$DISPLAY"; description=fmf

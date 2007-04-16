@@ -1,0 +1,641 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxFrame" name="MainFrame">
+    <title>playfmf</title>
+    <size>800,600</size>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxPanel" name="MainPanel">
+          <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="wxPanel" name="plot_container_panel"/>
+              
+              
+              <option>1</option>
+              
+              
+              <flag>wxALL|wxEXPAND</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <orient>wxHORIZONTAL</orient>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                        
+                    
+                    <label>frame:</label>
+                        
+                    
+                    <style>wxALIGN_RIGHT</style>
+                      </object>
+                      
+                  
+                  <option>0</option>
+                      
+                  
+                  <flag>wxTOP|wxRIGHT|wxEXPAND</flag>
+                      
+                  
+                  <border>10</border>
+                    </object>
+                <object class="sizeritem">
+                  <object class="wxSlider" name="frame_slider">
+                        
+                    
+                    <value></value>
+                        
+                    
+                    <min></min>
+                        
+                    
+                    <max></max>
+                        
+                    
+                    <style>wxSL_LABELS</style>
+                      </object>
+                      
+                  
+                  <option>1</option>
+                      
+                  
+                  <flag>wxEXPAND</flag>
+                    </object>
+              </object>
+                  
+              
+              <flag>wxEXPAND</flag>
+                </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <orient>wxHORIZONTAL</orient>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                        
+                    
+                    <label>absolute time:</label>
+                      </object>
+                      
+                  
+                  <option>0</option>
+                      
+                  
+                  <flag>wxTOP|wxLEFT|wxRIGHT|wxEXPAND</flag>
+                      
+                  
+                  <border>10</border>
+                    </object>
+                <object class="sizeritem">
+                  <object class="wxStaticText" name="time_abs_label">
+                        
+                    
+                    <label>0.0 (sec)</label>
+                      </object>
+                      
+                  
+                  <option>0</option>
+                      
+                  
+                  <flag>wxTOP|wxEXPAND</flag>
+                      
+                  
+                  <border>10</border>
+                    </object>
+              </object>
+                  
+              
+              <flag>wxEXPAND</flag>
+                </object>
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <orient>wxHORIZONTAL</orient>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                        
+                    
+                    <label>time since onset:</label>
+                      </object>
+                      
+                  
+                  <option>0</option>
+                      
+                  
+                  <flag>wxTOP|wxRIGHT|wxEXPAND</flag>
+                      
+                  
+                  <border>10</border>
+                    </object>
+                <object class="sizeritem">
+                  <object class="wxStaticText" name="time_rel_label">
+                        
+                    
+                    <label>0.0 (msec)</label>
+                      </object>
+                      
+                  
+                  <option>0</option>
+                      
+                  
+                  <flag>wxTOP|wxRIGHT|wxEXPAND</flag>
+                      
+                  
+                  <border>10</border>
+                    </object>
+              </object>
+                  
+              
+              <flag>wxEXPAND</flag>
+                </object>
+          </object>
+        </object>
+        
+        
+        <option>1</option>
+        
+        
+        <flag>wxEXPAND</flag>
+      </object>
+    </object>
+  </object>
+  <object class="wxMenuBar" name="MENUBAR">
+    <object class="wxMenu" name="FileMenu">
+      <label>&amp;File</label>
+      <object class="wxMenuItem" name="export_smaller_movie">
+        
+        
+        <label>Export smaller movie\tCtrl-E</label>
+      </object>
+      <object class="wxMenuItem" name="set_frame_offset">
+        
+        
+        <label>Set Frame offset\tCtrl-F</label>
+      </object>
+      <object class="wxMenuItem" name="quit_menuitem">
+        
+        
+        <label>Quit\tCtrl-Q</label>
+      </object>
+    </object>
+  </object>
+  <object class="wxDialog" name="EXPORT_DIALOG">
+    <title>Export fmf</title>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxStaticBoxSizer">
+          <label>Area of Interest</label>
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <object class="wxFlexGridSizer">
+              <cols>4</cols>
+              <rows>2</rows>
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  
+                  
+                  <label>xmin</label>
+                </object>
+                
+                
+                <flag>wxALL</flag>
+                
+                
+                <border>4</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="xmin_textctrl">
+                  
+                  
+                  <value>0</value>
+                </object>
+                
+                
+                <flag>wxRIGHT</flag>
+                
+                
+                <border>10</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  
+                  
+                  <label>xmax</label>
+                </object>
+                
+                
+                <flag>wxALL</flag>
+                
+                
+                <border>4</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="xmax_textctrl"/>
+              </object>
+              <growablecols>1</growablecols>
+              <growablecols>3</growablecols>
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  
+                  
+                  <label>ymin</label>
+                </object>
+                
+                
+                <flag>wxALL</flag>
+                
+                
+                <border>4</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="ymin_textctrl">
+                  
+                  
+                  <value>0</value>
+                </object>
+                
+                
+                <flag>wxRIGHT</flag>
+                
+                
+                <border>10</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxStaticText">
+                  
+                  
+                  <label>ymax</label>
+                </object>
+                
+                
+                <flag>wxALL</flag>
+                
+                
+                <border>4</border>
+              </object>
+              <object class="sizeritem">
+                <object class="wxTextCtrl" name="ymax_textctrl"/>
+              </object>
+            </object>
+            
+            
+            <option>1</option>
+            
+            
+            <flag>wxALL|wxEXPAND</flag>
+            
+            
+            <border>6</border>
+          </object>
+        </object>
+        
+        
+        <option>0</option>
+        
+        
+        <flag>wxALL|wxEXPAND</flag>
+        
+        
+        <border>6</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxStaticBoxSizer">
+          <label>Frame selection</label>
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>start</label>
+            </object>
+            
+            
+            <flag>wxALL</flag>
+            
+            
+            <border>4</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="start_frame">
+              
+              
+              <value>0</value>
+            </object>
+            
+            
+            <flag>wxRIGHT</flag>
+            
+            
+            <border>10</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>stop</label>
+            </object>
+            
+            
+            <flag>wxALL</flag>
+            
+            
+            <border>4</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="stop_frame"/>
+            
+            
+            <flag>wxRIGHT</flag>
+            
+            
+            <border>10</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>interval</label>
+            </object>
+            
+            
+            <flag>wxALL</flag>
+            
+            
+            <border>4</border>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="interval_frames">
+              
+              
+              <value>1</value>
+            </object>
+          </object>
+        </object>
+        
+        
+        <option>0</option>
+        
+        
+        <flag>wxALL|wxEXPAND</flag>
+        
+        
+        <border>6</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxStaticBoxSizer">
+          <label>Image manipulation</label>
+          <orient>wxVERTICAL</orient>
+          <object class="sizeritem">
+            <object class="wxCheckBox" name="flipLR">
+              
+              
+              <label>flip image Left/Right</label>
+            </object>
+          </object>
+        </object>
+        
+        
+        <flag>wxALL|wxEXPAND</flag>
+        
+        
+        <border>6</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxChoice" name="movie_format_choice">
+        </object>
+        
+        
+        <flag>wxALL|wxALIGN_CENTRE</flag>
+        
+        
+        <border>10</border>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxButton" name="cancel_button">
+              
+              
+              <label>Cancel</label>
+            </object>
+            
+            
+            <flag>wxALIGN_RIGHT</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label></label>
+            </object>
+            
+            
+            <option>1</option>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="save_button">
+              
+              
+              <label>Save...</label>
+            </object>
+            
+            
+            <flag></flag>
+          </object>
+        </object>
+        
+        
+        <option>0</option>
+        
+        
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
+        
+        
+        <border>10</border>
+      </object>
+    </object>
+  </object>
+  <object class="wxDialog" name="EXPORT_IMAGE_SEQUENCE">
+    <title>Image sequence settings</title>
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>Image directory + basename:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="image_basename"/>
+            
+            
+            <option>1</option>
+            
+            
+            <flag>wxEXPAND</flag>
+            
+            
+            <minsize>200,10</minsize>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="image_basename_browse">
+              
+              
+              <label>Browse...</label>
+            </object>
+          </object>
+        </object>
+        
+        
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>Image format and filename suffix:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxChoice" name="image_extension_choice">
+              
+              
+              <content>
+                <item>.jpg</item>
+                <item>.png</item>
+                <item>.bmp</item>
+              </content>
+            </object>
+          </object>
+        </object>
+        
+        
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>Image number format:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="image_number_format">
+              
+              
+              <value>%05d</value>
+            </object>
+          </object>
+        </object>
+        
+        
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>Example filename:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="example_filename">
+              
+              
+              <style>wxTE_READONLY</style>
+            </object>
+            
+            
+            <option>1</option>
+            
+            
+            <flag>wxEXPAND</flag>
+          </object>
+        </object>
+        
+        
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label>Flip images upside down</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxCheckBox" name="flip_upside_down">
+              
+              
+              <label></label>
+            </object>
+          </object>
+        </object>
+        
+        
+        <flag>wxALIGN_CENTRE</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxBoxSizer">
+          <orient>wxHORIZONTAL</orient>
+          <object class="sizeritem">
+            <object class="wxButton" name="cancel_button">
+              
+              
+              <label>Cancel</label>
+            </object>
+            
+            
+            <flag>wxALIGN_RIGHT</flag>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              
+              
+              <label></label>
+            </object>
+            
+            
+            <option>1</option>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="save_button">
+              
+              
+              <label>Save...</label>
+            </object>
+            
+            
+            <flag></flag>
+          </object>
+        </object>
+        
+        
+        <option>0</option>
+        
+        
+        <flag>wxBOTTOM|wxLEFT|wxRIGHT|wxEXPAND</flag>
+        
+        
+        <border>10</border>
+      </object>
+    </object>
+  </object>
+</resource>

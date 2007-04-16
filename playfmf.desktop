@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=playfmf
+MimeType=video/fmf
+Exec=/usr/bin/playfmf %f
+Type=Application
+Categories=GNOME;GTK;Application;AudioVideo;
+Comment=View FMF Files
+Icon=gnobots2.xpm
