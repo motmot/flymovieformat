@@ -26,6 +26,7 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
 import matplotlib.numerix as numerix
+import matplotlib.ticker
 
 RES = xrc.wxEmptyXmlResource()
 RES.LoadFromString(open(RESFILE).read())
@@ -266,6 +267,8 @@ class PlotPanel(wx.Panel):
                             cmap=cm.pink,
                             )
         self.im.set_clim(0,255)
+        a.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
+        a.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
 
         if 0:
             # flipLR (x) for display
