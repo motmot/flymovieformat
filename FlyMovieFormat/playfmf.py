@@ -269,6 +269,8 @@ class PlotPanel(wx.Panel):
         self.im.set_clim(0,255)
         a.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
         a.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
+        a.fmt_xdata = str
+        a.fmt_ydata = str
 
         if 0:
             # flipLR (x) for display
