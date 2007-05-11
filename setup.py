@@ -3,7 +3,7 @@ from distutils.core import setup
 import distutils.command.sdist
 
 from motmot_utils import get_svnversion_persistent
-version_str = '0.3.dev%(svnversion)s'
+version_str = '0.4.dev%(svnversion)s'
 version = get_svnversion_persistent('FlyMovieFormat/version.py',version_str)
 
 if 'setuptools' in sys.modules:
