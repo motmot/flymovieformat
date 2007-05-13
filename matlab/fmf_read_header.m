@@ -36,8 +36,10 @@ end
 
 f_height = double( fread( fp, 1, 'uint32' ) );
 f_width = double( fread( fp, 1, 'uint32' ) );
+%bytes_per_chunk = double( fread( fp, 1, 'uint64' ) );
 bytes_per_chunk = double( fread( fp, 1, 'long' ) );
 frame_count_location = ftell(fp);
+%max_n_frames = double( fread( fp, 1, 'uint64' ) );
 max_n_frames = double( fread( fp, 1, 'long' ) );
 
 if max_n_frames <= 0,
@@ -50,7 +52,7 @@ if max_n_frames <= 0,
     max_n_frames = max_n_frames + 1;
   end
   fseek( fp, frame_count_location, 'bof');
-  fwrite( fp, max_n_frames, 'long' );
+  fwrite( fp, max_n_frames, 'uint64' );
 end
 
 fclose( fp );

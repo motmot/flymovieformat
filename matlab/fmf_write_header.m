@@ -41,8 +41,8 @@ end
 
 fwrite(fp,f_height,'uint32');
 fwrite(fp,f_width,'uint32');
-fwrite(fp,bytes_per_chunk,'long');
-fwrite(fp,max_n_frames,'long');
+fwrite(fp,bytes_per_chunk,'uint64');
+fwrite(fp,max_n_frames,'uint64');
 curr = ftell(fp);
 if header_size > curr,
   fwrite(fp,zeros(header_size-curr,1), 'uint8');
