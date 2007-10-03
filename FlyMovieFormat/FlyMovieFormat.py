@@ -1,3 +1,6 @@
+# by Andrew Straw
+# modified by Kristin Branson
+
 #FlyMovieFormat
 import sys
 import struct
@@ -85,14 +88,15 @@ class FlyMovie:
         self.next_frame = None
 
 	if self.n_frames == 0: # unknown movie length, read to find out
-	    while 1:
-		try:
-		    timestamp=self._read_next_timestamp()
-		    self.n_frames += 1
-                    check_integrity = True # make sure we check last frame(s)
-		except NoMoreFramesException:
-                    break
-	    self.file.seek(self.chunk_start) # go back to beginning
+            # seek to end of the movie
+            self.file.seek(0,2)
+            # get the byte position
+            eb = self.file.tell()
+            # compute number of frames using bytes_per_chunk
+            self.n_frames = int((eb-self.chunk_start)/self.bytes_per_chunk)
+            # seek back to the start
+            self.file.seek(self.chunk_start,0)
+            
             
         if check_integrity:
             n_frames_ok = False
