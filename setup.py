@@ -41,7 +41,7 @@ else:
 
 setup(name='FlyMovieFormat',
       description='support for .fmf files (part of the motmot camera packages)',
-      version='0.5.1',
+      version='0.5.2',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       license='BSD',

@@ -2,6 +2,7 @@
 # modified by Kristin Branson
 
 #FlyMovieFormat
+from __future__ import division
 import sys
 import struct
 import warnings
@@ -93,10 +94,9 @@ class FlyMovie:
             # get the byte position
             eb = self.file.tell()
             # compute number of frames using bytes_per_chunk
-            self.n_frames = int((eb-self.chunk_start)/self.bytes_per_chunk)
+            self.n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
             # seek back to the start
             self.file.seek(self.chunk_start,0)
-            
             
         if check_integrity:
             n_frames_ok = False
@@ -106,6 +106,8 @@ class FlyMovie:
                     n_frames_ok = True
                 except NoMoreFramesException:
                     self.n_frames -= 1
+                    if self.n_frames == 0:
+                        break
 	    self.file.seek(self.chunk_start) # go back to beginning
 
         self._all_timestamps = None # cache
@@ -137,12 +139,19 @@ class FlyMovie:
     def get_bits_per_pixel(self):
         return self.bits_per_pixel
 
-    def _read_next_frame(self):
+    def _read_next_frame(self,allow_partial_frames=False):
         data = self.file.read( self.bytes_per_chunk )
         if data == '':
             raise NoMoreFramesException('EOF')
         if len(data)<self.bytes_per_chunk:
-            raise NoMoreFramesException('short frame')
+            if allow_partial_frames:
+                missing_bytes = self.bytes_per_chunk-len(data)
+                data = data + '\x00'*missing_bytes
+                warnings.warn('appended %d bytes (to a total of %d), image will be corrupt'%(missing_bytes,self.bytes_per_chunk))
+            else:
+                raise NoMoreFramesException('short frame '\
+                                            '(%d bytes instead of %d)'%(
+                    len(data),self.bytes_per_chunk))
         timestamp_buf = data[:self.timestamp_len]
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
 
@@ -180,24 +189,25 @@ class FlyMovie:
             return False
         return True
         
-    def get_next_frame(self):
+    def get_next_frame(self,allow_partial_frames=False):
         if self.next_frame is not None:
             frame, timestamp = self.next_frame
             self.next_frame = None
             return frame, timestamp
         else:
-            frame, timestamp = self._read_next_frame()
+            frame, timestamp = self._read_next_frame(
+                allow_partial_frames=allow_partial_frames)
             return frame, timestamp
 
-    def get_frame(self,frame_number):
+    def get_frame(self,frame_number,allow_partial_frames=False):
         if frame_number < 0:
             frame_number = self.n_frames + frame_number
         if frame_number < 0:
-            raise IndexError("index out of range (n_frames = %d)"%self.n_frames)
+            raise IndexError("negative index out of range (movie has no frames)")
         seek_to = self.chunk_start+self.bytes_per_chunk*frame_number
         self.file.seek(seek_to)
         self.next_frame = None
-        return self.get_next_frame()
+        return self.get_next_frame(allow_partial_frames=allow_partial_frames)
     
     def get_all_timestamps(self):
         if self._all_timestamps is None:

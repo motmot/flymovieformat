@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys, time, os, gc
+from optparse import OptionParser
 
 import pkg_resources # from setuptools
 matplotlibrc = pkg_resources.resource_filename(__name__,"matplotlibrc") # trigger extraction
@@ -32,30 +33,6 @@ RES = xrc.EmptyXmlResource()
 RES.LoadFromString(open(RESFILE).read())
 
 bpp = FlyMovieFormat.format2bpp
-
-class MovieAnnotation:
-    def __init__( self, filename ):
-        """Attempt to open annotation file."""
-        try:
-            self.annotation_file = open( '%s.ann'%(filename,), "r" )
-        except IOError:
-            self.annotation_exists = False
-            self.show_annotation = False
-        else:
-            self.annotation_exists = True
-            self.show_annotation = True
-
-    def __del__( self ):
-        """Close annotation file, if open."""
-        if self.annotation_exists:
-            self.annotation_file.close()
-
-    def _get_ann( self, framenumber ):
-        return False
-
-    def add_ann_to_frame( self, frame, framenumber ):
-        data = self._get_ann( framenumber )
-        return frame
 
 class ImageSequenceSaverPlugin(object):
     def get_description(self):
@@ -405,7 +382,7 @@ class MyApp(wx.App):
         frame_number = self.slider.GetValue() - self.frame_offset
         self.frame_offset = new_frame_offset
         slider = self.slider
-        slider.SetRange( self.frame_offset+0, self.frame_offset+self.n_frames-1 )
+        slider.SetRange( self.frame_offset+0, max(1,self.frame_offset+self.n_frames-1 ))
         slider.SetValue( self.frame_offset+frame_number )
     def OnColormapMenu(self, event):
         cmap_name = self.cmap_ids[event.GetId()]
@@ -414,17 +391,36 @@ class MyApp(wx.App):
         # update display
         self.OnScroll(None)
     
-    def OnNewMovie(self,filename):
+    def OnNewMovie(self,filename,corruption_fix=False):
+        if corruption_fix:
+            self.allow_partial_frames=True
+        else:
+            self.allow_partial_frames=False
         a = self.plotpanel.fig.add_subplot(111) # not really new, just gets axes
         
         self.fly_movie = FlyMovieFormat.FlyMovie(filename)
         self.n_frames = self.fly_movie.get_n_frames()
-        frame,timestamp = self.fly_movie.get_frame(0)
+        frame,timestamp = self.fly_movie.get_frame(
+            0, allow_partial_frames=self.allow_partial_frames)
+        if corruption_fix:
+            while 1:
+                test_frame = self.n_frames-1
+                try:
+                    self.fly_movie.get_frame(
+                        test_frame,
+                        allow_partial_frames=True)
+                except FlyMovieFormat.NoMoreFramesException:
+                    print 'no frame %d, shortening movie'%test_frame
+                else:
+                    # if we get here, it means we had a good frame
+                    self.n_frames = test_frame+1
+                    break
+                
         self.frame_shape = frame.shape
         self.first_timestamp=timestamp
         frame_number = 0
         slider = self.slider
-        slider.SetRange( self.frame_offset+0, self.frame_offset+self.n_frames-1 )
+        slider.SetRange( self.frame_offset+0, max(self.frame_offset+self.n_frames-1,1) )
         slider.SetValue( self.frame_offset+frame_number )
         
         self.frame.SetTitle('playfmf: %s'%(filename,)) # window title    
@@ -433,37 +429,23 @@ class MyApp(wx.App):
         self.width_height = (self.fly_movie.get_width()//(bpp[self.format]//8),
                              self.fly_movie.get_height())
         
-        # movie annotation, if present
-        self.annotation = MovieAnnotation( filename )
-
-        # set mat-figure title
-        if self.annotation.annotation_exists:
-            a.set_title('%s %s +ann'%(filename,self.format))
-        else:
-            a.set_title('%s %s'%(filename,self.format))
-        
-        frame,timestamp = self.fly_movie.get_frame(0)
-        if self.annotation.show_annotation:
-            frame = self.annotation.add_ann_to_frame( frame, 0 )
         self.plotpanel.init_plot_data(frame,self.format)
-
-##        self.plot_container.Update()
         self.plot_container.Layout()
-##        self.frame.Update()
-##        self.frame.Layout()
-##        self.frame.GetSizer().Layout()
-##        ## Forces a resize event to get around a minor bug...
-##        self.frame.SetSize(self.frame.GetSize())
-##        ## Forces a resize event to get around a minor bug...
-##        self.plot_container.SetSize(self.plot_container.GetSize())
+        self.OnScroll(None)
 
     def OnScroll(self,event):
         frame_number = self.slider.GetValue() - self.frame_offset
-        frame,timestamp = self.fly_movie.get_frame(frame_number)
-
-        if self.annotation.show_annotation:
-            frame = self.annotation.add_ann_to_frame( frame, frame_number )
-
+        try:
+            frame,timestamp = self.fly_movie.get_frame(
+                frame_number,
+                allow_partial_frames=self.allow_partial_frames)
+        except FlyMovieFormat.NoMoreFramesException:
+            frame_number = 0 - self.frame_offset
+            self.slider.SetValue(frame_number)
+            frame,timestamp = self.fly_movie.get_frame(
+                frame_number,
+                allow_partial_frames=self.allow_partial_frames)
+            
         self.plotpanel.set_array(frame)
         
         label = xrc.XRCCTRL(self.frame,"time_rel_label")
@@ -511,7 +493,9 @@ class MyApp(wx.App):
             crop_xmax = (xmax+1)*bpp[self.format]//8
 
             for i in xrange(start,stop+1,interval):
-                orig_frame,timestamp = self.fly_movie.get_frame(i)
+                orig_frame,timestamp = self.fly_movie.get_frame(
+                    i,
+                    allow_partial_frames=self.allow_partial_frames)
                 save_frame = orig_frame[ymin:ymax+1,crop_xmin:crop_xmax]
                 if flipLR:
                     save_frame = save_frame[:,::-1]
@@ -539,24 +523,36 @@ class MyApp(wx.App):
             dlg.Destroy()
     
 def main():
-    try:
-        filename = sys.argv[1]
-    except IndexError:
-        raise RuntimeError('must provide FMF filename as command line argument')
+    usage = '%prog FILE [options]'
     
-    if len(sys.argv) > 2:
-        frame_offset = int(sys.argv[2])
-    else:
-        frame_offset = 0
+    parser = OptionParser(usage)
 
-    #app = MyApp(0)
-    if sys.platform.startswith('win') or sys.platform.startswith('darwin'):
+    parser.add_option("--disable-corrpution-fix",
+                      action='store_false', default=True,
+                      dest='corruption_fix',
+                      help="disable automatic fixing of corrupted .fmf files")
+
+    parser.add_option("--frame-offset", type="int",
+                      default=0,
+                      help="add an integer offset to frame numbers")
+    
+    (options, args) = parser.parse_args()
+
+    if len(args)<1:
+        parser.print_help()
+        return
+
+    filename = args[0]
+    
+    if (sys.platform.startswith('win') or
+        sys.platform.startswith('darwin')):
         kws = dict(redirect=True,filename='playfmf.log')
     else:
         kws = {}
     app = MyApp(**kws)
-    app.OnNewMovie(filename)
-    app.update_frame_offset(frame_offset)
+    app.OnNewMovie(filename,
+                   corruption_fix=options.corruption_fix)
+    app.update_frame_offset(options.frame_offset)
     app.MainLoop()
 
 if __name__ == '__main__':
