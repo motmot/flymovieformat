@@ -2,10 +2,6 @@ import sys
 from distutils.core import setup
 import distutils.command.sdist
 
-from motmot_utils import get_svnversion_persistent
-version_str = '0.4.dev%(svnversion)s'
-version = get_svnversion_persistent('FlyMovieFormat/version.py',version_str)
-
 if 'setuptools' in sys.modules:
     have_setuptools = True
 else:
@@ -44,11 +40,12 @@ else:
         )
 
 setup(name='FlyMovieFormat',
-      description='support for .fmf files',
-      version=version,
+      description='support for .fmf files (part of the motmot camera packages)',
+      version='0.5.0',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       license='BSD',
+      url='http://code.astraw.com/projects/motmot',
       packages = ['FlyMovieFormat'],
       package_data = {'FlyMovieFormat':['playfmf.xrc',
                                         'matplotlibrc',
