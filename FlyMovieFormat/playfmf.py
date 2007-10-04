@@ -28,7 +28,7 @@ from matplotlib.figure import Figure
 import matplotlib.numerix as numerix
 import matplotlib.ticker
 
-RES = xrc.wxEmptyXmlResource()
+RES = xrc.EmptyXmlResource()
 RES.LoadFromString(open(RESFILE).read())
 
 bpp = FlyMovieFormat.format2bpp
