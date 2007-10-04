@@ -13,7 +13,7 @@ import Image
 import imops
 
 from wxwrap import wx
-import wxPython.xrc as xrc
+import wx.xrc as xrc
 
 # force use of numpy by matplotlib(FlyMovieFormat uses numpy)
 import matplotlib
