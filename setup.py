@@ -14,7 +14,6 @@ class sdist_error( distutils.command.sdist.sdist ):
 if have_setuptools:
     kws=dict(
       extras_require = {
-    'wxwrap':     ['wxwrap'],
     'imops':      ['imops>=0.3.dev275'],
     },
 
@@ -24,7 +23,7 @@ if have_setuptools:
     'fmf_collapse = FlyMovieFormat.fmf_collapse:main',
     ],
     'gui_scripts': [
-    'playfmf = FlyMovieFormat.playfmf:main [wxwrap,imops]', # also need python-matplotlib, python-numpy, python-imaging, python-wxgtk2.6
+    'playfmf = FlyMovieFormat.playfmf:main [imops]', # also need python-matplotlib, python-numpy, python-imaging, python-wxgtk2.6
     'fmf_plottimestamps = FlyMovieFormat.fmf_plottimestamps:main',
     ],
     'FlyMovieFormat.exporter_plugins':[
