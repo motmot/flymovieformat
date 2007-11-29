@@ -18,7 +18,7 @@ import math
 # version 1 formats:
 VERSION_FMT = '<I'
 FORMAT_LEN_FMT = '<I'
-BITS_PER_PIXEL_FMT = '<I' 
+BITS_PER_PIXEL_FMT = '<I'
 FRAMESIZE_FMT = '<II'
 CHUNKSIZE_FMT = '<Q'
 N_FRAME_FMT = '<Q'
@@ -30,6 +30,8 @@ CHUNK_TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
 CHUNK_DATASIZE_FMT = '<Q'
 
 format2bpp = { # convert format to bits per pixel
+    'RAW8':8,
+    'RAW16':16,
     'MONO8':8,
     'MONO16':16,
     'RGB8':24,
@@ -40,12 +42,12 @@ format2bpp = { # convert format to bits per pixel
 
 class NoMoreFramesException( Exception ):
     pass
-    
+
 class InvalidMovieFileException( Exception ):
     pass
-    
+
 class FlyMovie:
-    
+
     def __init__(self, filename,check_integrity=False):
         self.filename = filename
         try:
@@ -55,7 +57,7 @@ class FlyMovie:
             self.writeable = False
         else:
             self.writeable = True
-        
+
         r=self.file.read # shorthand
         t=self.file.tell # shorthand
         size=struct.calcsize
@@ -64,7 +66,7 @@ class FlyMovie:
         version_buf = r(size(VERSION_FMT))
         if len(version_buf)!=size(VERSION_FMT):
             raise InvalidMovieFileException("could not read data file")
-            
+
         version, = unpack(VERSION_FMT,version_buf)
         if version not in (1,3):
             raise NotImplementedError('Can only read version 1 and 3 files')
@@ -97,7 +99,7 @@ class FlyMovie:
             self.n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
             # seek back to the start
             self.file.seek(self.chunk_start,0)
-            
+
         if check_integrity:
             n_frames_ok = False
             while not n_frames_ok:
@@ -117,10 +119,10 @@ class FlyMovie:
         self.writeable = False
         self.n_frames = None
         self.next_frame = None
-        
+
     def get_width(self):
         """returns width of data
-        
+
         to get width of underlying image:
 
           image_width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
@@ -157,7 +159,7 @@ class FlyMovie:
 
         frame = nx.fromstring(data[self.timestamp_len:],nx.uint8)
         frame.shape = self.framesize
-        
+
 ##        if self.format == 'MONO8':
 ##            frame = nx.fromstring(data[self.timestamp_len:],nx.uint8)
 ##            frame.shape = self.framesize
@@ -171,7 +173,7 @@ class FlyMovie:
 ##        else:
 ##            raise NotImplementedError("Reading not implemented for %s format"%(self.format,))
         return frame, timestamp
-        
+
     def _read_next_timestamp(self):
         read_len = struct.calcsize(TIMESTAMP_FMT)
         timestamp_buf = self.file.read( read_len )
@@ -180,7 +182,7 @@ class FlyMovie:
             raise NoMoreFramesException('EOF')
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
         return timestamp
-        
+
     def is_another_frame_available(self):
         try:
             if self.next_frame is None:
@@ -188,7 +190,7 @@ class FlyMovie:
         except NoMoreFramesException:
             return False
         return True
-        
+
     def get_next_frame(self,allow_partial_frames=False):
         if self.next_frame is not None:
             frame, timestamp = self.next_frame
@@ -208,7 +210,7 @@ class FlyMovie:
         self.file.seek(seek_to)
         self.next_frame = None
         return self.get_next_frame(allow_partial_frames=allow_partial_frames)
-    
+
     def get_all_timestamps(self):
         if self._all_timestamps is None:
             self.seek(0)
@@ -224,7 +226,7 @@ class FlyMovie:
             self.next_frame = None
             self._all_timestamps = nx.asarray(self._all_timestamps)
         return self._all_timestamps
-        
+
     def seek(self,frame_number):
         if frame_number < 0:
             frame_number = self.n_frames + frame_number
@@ -240,7 +242,7 @@ class FlyMovie:
         else:
             timestamp = self._read_next_timestamp()
             return timestamp
-        
+
     def get_frame_at_or_before_timestamp(self, timestamp):
         tss = self.get_all_timestamps()
         at_or_before_timestamp_cond = tss <= timestamp
@@ -249,16 +251,16 @@ class FlyMovie:
             raise ValueError("no frames at or before timestamp given")
         fno = nz[-1]
         return self.get_frame(fno)
-        
+
 class FlyMovieSaver:
     def __init__(self,
                  filename,
                  version=1,
                  seek_ok=True,
-                 
+
                  compressor=None,
                  comp_level=1,
-                 
+
                  format=None,
                  bits_per_pixel=None,
                  ):
@@ -274,12 +276,12 @@ class FlyMovieSaver:
           --------------
           compressor -- None or 'lzo' (only used if version == 2)
           comp_level -- compression level (only used if compressed)
-          
+
           For version 3:
           --------------
           format     -- string representing format (e.g. 'MONO8' or 'YUV422')
           bits_per_pixel -- number of bytes per pixel (MONO8 = 8, YUV422 = 16)
-          
+
 
         """
 
@@ -295,7 +297,7 @@ class FlyMovieSaver:
         else:
             mode = "wb"
         self.seek_ok = seek_ok
-            
+
         self.file = open(self.filename,mode=mode)
 
         if version == 1:
@@ -311,12 +313,12 @@ class FlyMovieSaver:
             raise ValueError('only versions 1, 2, and 3 exist')
 
         self.file.write(struct.pack(VERSION_FMT,version))
-        
+
         if version == 2:
             self.compressor = compressor
             if self.compressor is None:
                 self.compressor = 'non'
-                
+
             if self.compressor == 'non':
     	        self.compress_func = lambda x: x
     	    elif self.compressor == 'lzo':
@@ -326,7 +328,7 @@ class FlyMovieSaver:
     	        raise ValueError("unknown compressor '%s'"%(self.compressor,))
     	    assert type(self.compressor) == str and len(self.compressor)<=4
     	    self.file.write(self.compressor)
-            
+
         if version == 3:
             if type(format) != str:
                 raise ValueError("format must be string (e.g. 'MONO8', 'YUV422')")
@@ -336,7 +338,7 @@ class FlyMovieSaver:
             self.file.write(struct.pack(FORMAT_LEN_FMT,format_len))
             self.file.write(format)
             self.file.write(struct.pack(BITS_PER_PIXEL_FMT,bits_per_pixel))
-            
+
             self.format = format
             self.bits_per_pixel = bits_per_pixel
         else:
@@ -344,7 +346,7 @@ class FlyMovieSaver:
             self.bits_per_pixel = 8
 
         self.framesize = None
-        
+
         self.n_frames = 0
         self.n_frame_pos = None
 
@@ -386,14 +388,14 @@ class FlyMovieSaver:
                 assert self.framesize == frames[0].shape
             mega_buffer = ''
             for frame, timestamp in zip(frames,timestamps):
-                b1 = struct.pack(TIMESTAMP_FMT,timestamp)            
+                b1 = struct.pack(TIMESTAMP_FMT,timestamp)
                 mega_buffer += b1
                 b2 = frame.tostring()
                 assert len(b2) == self._bytes_per_image
                 mega_buffer += b2
             self.file.write(mega_buffer)
             self.n_frames += len(frames)
-        
+
     def _do_v1_header(self,frame):
         # first frame
 
@@ -419,22 +421,22 @@ class FlyMovieSaver:
         self.file.write(buf)
 
         ####### end of header ###########################
-        
+
     def _add_frames_v2(self, frames, timestamps=None):
         if self.framesize is None:
             # header stuff dependent on first frame
-            
+
             frame = frames[0]
             assert len(frame.shape) == 2 # must be MxN array
             self.framesize = frame.shape
-            
+
             buf = struct.pack(FRAMESIZE_FMT,frame.shape[0],frame.shape[1])
             self.file.write(buf)
-            
+
             self.n_frame_pos = self.file.tell() # may fill value later
-            buf = struct.pack(N_FRAME_FMT,self.n_frames) 
+            buf = struct.pack(N_FRAME_FMT,self.n_frames)
             self.file.write(buf)
-            
+
             ####### end of header ###########################
 
         # begin chunk
@@ -455,12 +457,12 @@ class FlyMovieSaver:
         buf = ''.join(bufs)
         del bufs
         compressed_data = self.compress_func(buf)
-        
+
         chunk_datasize = len( compressed_data)
         self.file.write(struct.pack(CHUNK_DATASIZE_FMT,chunk_datasize))
 
         self.file.write(compressed_data)
-        
+
         self.n_frames += chunk_n_frames
 
     def _add_frame_v2(self,frame,timestamp=nan):
