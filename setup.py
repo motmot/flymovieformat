@@ -48,6 +48,7 @@ setup(name='FlyMovieFormat',
       packages = ['FlyMovieFormat'],
       package_data = {'FlyMovieFormat':['playfmf.xrc',
                                         'matplotlibrc',
+                                        'test_mono8.fmf',
                                         'description.txt']},
       **kws
       )
