@@ -9,7 +9,14 @@ def main():
         filename1 = sys.argv[1]
         filename2 = sys.argv[2]
     except:
-        print 'Usage: fmf_collapse fmf_filename1 fmf_filename2'
+        print """Usage: fmf_collapse fmf_filename1 fmf_filename2
+
+This program takes a set of .fmf files and saves the mean of all
+frames from all files as a .bmp image file.
+
+The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
+
+"""
         sys.exit()
 
     path,ext = os.path.splitext(filename1)
