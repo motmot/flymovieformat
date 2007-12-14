@@ -1,17 +1,8 @@
 import sys
-from distutils.core import setup
+from setuptools import setup
 import distutils.command.sdist
 
-if 'setuptools' in sys.modules:
-    have_setuptools = True
-else:
-    have_setuptools = False
-
-class sdist_error( distutils.command.sdist.sdist ):
-    def run(self,*args,**kw):
-        raise RuntimeError('cannot build sdist without setuptools')
-
-if have_setuptools:
+if 1:
     kws=dict(
       extras_require = {
     'imops':      ['imops>=0.3.dev275'],
@@ -21,9 +12,10 @@ if have_setuptools:
     'console_scripts': [
     'fmf2bmps = FlyMovieFormat.fmf2bmps:main',
     'fmf_collapse = FlyMovieFormat.fmf_collapse:main',
+    'fmf_info = FlyMovieFormat.fmf_info:main',
     ],
     'gui_scripts': [
-    'playfmf = FlyMovieFormat.playfmf:main [imops]', # also need python-matplotlib, python-numpy, python-imaging, python-wxgtk2.6
+    'playfmf = FlyMovieFormat.playfmf:main [imops]',
     'fmf_plottimestamps = FlyMovieFormat.fmf_plottimestamps:main',
     ],
     'FlyMovieFormat.exporter_plugins':[
@@ -33,10 +25,6 @@ if have_setuptools:
         ],
     },
       )
-else:
-    kws = dict(
-        cmdclass={'sdist':sdist_error},
-        )
 
 setup(name='FlyMovieFormat',
       description='support for .fmf files (part of the motmot camera packages)',
