@@ -3,7 +3,17 @@ import FlyMovieFormat
 import pkg_resources # requires setuptools
 import numpy
 
+fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in ['test_mono8.fmf',
+                                                                       'test_raw8.fmf',
+                                                                       ]]
+
 class TestFMF(unittest.TestCase):
+
+    def test_formats(self):
+        for filename in fmf_filenames:
+            fmf = FlyMovieFormat.FlyMovie(filename)
+            frame, timestamp = fmf.get_next_frame()
+
     def test_random_vs_sequential_reads(self):
         fmf = FlyMovieFormat.FlyMovie(
             pkg_resources.resource_filename(__name__,'test_mono8.fmf'))
