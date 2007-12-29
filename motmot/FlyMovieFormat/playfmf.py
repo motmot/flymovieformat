@@ -11,7 +11,7 @@ RESFILE = pkg_resources.resource_filename(__name__,"playfmf.xrc") # trigger extr
 # py2exe stuff done
 import FlyMovieFormat
 import Image
-import imops
+import motmot.imops.imops as imops
 
 import wx
 import wx.xrc as xrc
@@ -38,7 +38,7 @@ class ImageSequenceSaverPlugin(object):
     def get_description(self):
         return 'Image sequence (CAUTION: loses timestamps)'
     def get_saver(self,wx_parent,format,width_height):
-        
+
         class ImageSequenceSaver(object):
             def __init__(self,filename,flip_upside_down,format,width_height):
                 self.filename = filename
@@ -60,7 +60,7 @@ class ImageSequenceSaverPlugin(object):
                 im.save(fname)
             def close(self):
                 return
-            
+
         def OnCancelImageSequence(event):
             dlg2.Close(True)
         def CalcFilename():
@@ -84,7 +84,7 @@ class ImageSequenceSaverPlugin(object):
                                        wx.OK | wx.ICON_ERROR
                                        )
                 dlg.ShowModal()
-                dlg.Destroy()                      
+                dlg.Destroy()
                 return
             filedir=os.path.split(filename)[0]
             if filedir == '':
@@ -149,7 +149,7 @@ class GenericSaverPlugin(object):
             return
         saver = self.sub_get_saver(wx_parent,filename,format,widthheight)
         return saver
-                
+
 class TxtFileSaverPlugin(GenericSaverPlugin):
     def get_description(self):
         return 'text file of timestamps (*.txt)'
@@ -164,7 +164,7 @@ class TxtFileSaverPlugin(GenericSaverPlugin):
             def close(self):
                 self.txt_file.close()
         return TxtSaver(filename)
-    
+
 class FmfFileSaverPlugin(GenericSaverPlugin):
     def get_description(self):
         return 'Fly Movie Format (*.fmf)'
@@ -182,7 +182,7 @@ class FmfFileSaverPlugin(GenericSaverPlugin):
             def close(self):
                 self.fmf_file.close()
         return FmfSaver(filename,format)
-    
+
 class PlotPanel(wx.Panel):
 
     def __init__(self, parent,statbar=None):
@@ -196,15 +196,15 @@ class PlotPanel(wx.Panel):
             self.toolbar.Realize()
         else:
             self.toolbar = None
-                           
+
         #self.canvas.mpl_connect('button_press_event',self._onButton)
 
         # Now put all into a sizer
         sizer = wx.BoxSizer(wx.VERTICAL)
-        
+
         # This way of adding to sizer allows resizing
         sizer.Add(self.canvas, 1, wx.LEFT|wx.TOP|wx.GROW)
-        
+
         if self.toolbar is not None:
             # On Windows platform, default window size is incorrect, so set
             # toolbar width to figure width.
@@ -219,7 +219,7 @@ class PlotPanel(wx.Panel):
         self.SetSizer(sizer)
         #self.Fit()
         #self.Update()
-        
+
 ##    def _onButton(self,mouse_event):
 ##        if mouse_event.inaxes:
 ##            print "%.2f, %.2f"%(mouse_event.xdata, mouse_event.ydata)
@@ -253,15 +253,15 @@ class PlotPanel(wx.Panel):
             # flipLR (x) for display
             xlim = a.get_xlim()
             a.set_xlim((xlim[1],xlim[0]))
-        
+
         if self.toolbar is not None:
             self.toolbar.update()
 
     def GetToolBar(self):
-        # You will need to override GetToolBar if you are using an 
+        # You will need to override GetToolBar if you are using an
         # unmanaged toolbar in your frame
         return self.toolbar
-		
+
     def onEraseBackground(self, evt):
         # this is supposed to prevent redraw flicker on some X servers...
         pass
@@ -280,18 +280,18 @@ class PlotPanel(wx.Panel):
 class MyApp(wx.App):
     def OnInit(self):
         self.res = RES
-        
+
         # main frame and panel ---------
 
         self.frame = self.res.LoadFrame(None,"MainFrame")
-        
+
         statbar = matplotlib.backends.backend_wx.StatusBarWx(self.frame)
         self.frame.SetStatusBar(statbar)
-        
+
         self.panel = xrc.XRCCTRL(self.frame,"MainPanel")
 
         # menubar ----------------------
-        
+
         menubar = self.res.LoadMenuBarOnFrame(self.frame,"MENUBAR")
         self.frame_offset = 0
         wx.EVT_MENU(self.frame, xrc.XRCID("set_frame_offset"),
@@ -308,14 +308,14 @@ class MyApp(wx.App):
             wx.EVT_MENU(self.frame, id, self.OnColormapMenu)
             self.cmap_ids[id]=cmap
         menubar.Append(colormap_menu,"&Colormap")
-            
+
         # matplotlib panel -------------
 
         # container for matplotlib panel (I like to make a container
         # panel for our panel so I know where it'll go when in XRCed.)
         self.plot_container = xrc.XRCCTRL(self.frame,"plot_container_panel")
         sizer = wx.BoxSizer(wx.VERTICAL)
-        
+
         # matplotlib panel itself
         self.plotpanel = PlotPanel(self.plot_container,statbar=statbar)
 
@@ -333,9 +333,9 @@ class MyApp(wx.App):
         self.slider = slider
 
         # final setup ------------------
-        
+
         sizer = self.panel.GetSizer()
-        
+
         self.frame.SetSize((800,800))
         self.frame.Show(1)
         self.SetTopWindow(self.frame)
@@ -390,14 +390,14 @@ class MyApp(wx.App):
         self.plotpanel.im.set_cmap(cmap)
         # update display
         self.OnScroll(None)
-    
+
     def OnNewMovie(self,filename,corruption_fix=False):
         if corruption_fix:
             self.allow_partial_frames=True
         else:
             self.allow_partial_frames=False
         a = self.plotpanel.fig.add_subplot(111) # not really new, just gets axes
-        
+
         self.fly_movie = FlyMovieFormat.FlyMovie(filename)
         self.n_frames = self.fly_movie.get_n_frames()
         frame,timestamp = self.fly_movie.get_frame(
@@ -415,20 +415,20 @@ class MyApp(wx.App):
                     # if we get here, it means we had a good frame
                     self.n_frames = test_frame+1
                     break
-                
+
         self.frame_shape = frame.shape
         self.first_timestamp=timestamp
         frame_number = 0
         slider = self.slider
         slider.SetRange( self.frame_offset+0, max(self.frame_offset+self.n_frames-1,1) )
         slider.SetValue( self.frame_offset+frame_number )
-        
-        self.frame.SetTitle('playfmf: %s'%(filename,)) # window title    
+
+        self.frame.SetTitle('playfmf: %s'%(filename,)) # window title
         self.fly_movie = FlyMovieFormat.FlyMovie(filename)
         self.format = self.fly_movie.get_format()
         self.width_height = (self.fly_movie.get_width()//(bpp[self.format]//8),
                              self.fly_movie.get_height())
-        
+
         self.plotpanel.init_plot_data(frame,self.format)
         self.plot_container.Layout()
         self.OnScroll(None)
@@ -445,18 +445,18 @@ class MyApp(wx.App):
             frame,timestamp = self.fly_movie.get_frame(
                 frame_number,
                 allow_partial_frames=self.allow_partial_frames)
-            
+
         self.plotpanel.set_array(frame)
-        
+
         label = xrc.XRCCTRL(self.frame,"time_rel_label")
         label.SetLabel('%.1f (msec)'%((timestamp-self.first_timestamp)*1000.0,))
-        
+
         label = xrc.XRCCTRL(self.frame,"time_abs_label")
-        
+
         time_fmt = '%Y-%m-%d %H:%M:%S %Z%z'
         label.SetLabel('%.3f (sec) %s'%(timestamp,
                                         time.strftime(time_fmt, time.localtime(timestamp))))
-        
+
     def OnQuit(self, event):
         self.frame.Close(True)
 
@@ -468,7 +468,7 @@ class MyApp(wx.App):
             xmax = int(xrc.XRCCTRL(dlg,"xmax_textctrl").GetValue())
             ymin = int(xrc.XRCCTRL(dlg,"ymin_textctrl").GetValue())
             ymax = int(xrc.XRCCTRL(dlg,"ymax_textctrl").GetValue())
-            
+
             start = int(xrc.XRCCTRL(dlg,"start_frame").GetValue())
             stop = int(xrc.XRCCTRL(dlg,"stop_frame").GetValue())
             interval = int(xrc.XRCCTRL(dlg,"interval_frames").GetValue())
@@ -483,7 +483,7 @@ class MyApp(wx.App):
             for plugin in self.plugins:
                 if description == plugin.get_description():
                     break
-                
+
             assert description == plugin.get_description()
 
             saver = plugin.get_saver(dlg,self.format,self.width_height)
@@ -501,18 +501,18 @@ class MyApp(wx.App):
                     save_frame = save_frame[:,::-1]
                 saver.save( save_frame, timestamp )
             saver.close()
-            
+
         dlg = self.res.LoadDialog(self.frame,"EXPORT_DIALOG")
 
         format_choice_ctrl = xrc.XRCCTRL(dlg,"movie_format_choice")
         for plugin in self.plugins:
             description = plugin.get_description()
             format_choice_ctrl.Append(description)
-        
+
         xrc.XRCCTRL(dlg,"xmax_textctrl").SetValue(str(self.width_height[0]-1))
         xrc.XRCCTRL(dlg,"ymax_textctrl").SetValue(str(self.width_height[1]-1))
         xrc.XRCCTRL(dlg,"stop_frame").SetValue(str(self.n_frames-1))
-        
+
         cancel_button=xrc.XRCCTRL(dlg,"cancel_button")
         wx.EVT_BUTTON(dlg, cancel_button.GetId(),OnCancelExportSmallerMovie)
         save_button=xrc.XRCCTRL(dlg,"save_button")
@@ -521,10 +521,10 @@ class MyApp(wx.App):
             dlg.ShowModal()
         finally:
             dlg.Destroy()
-    
+
 def main():
     usage = '%prog FILE [options]'
-    
+
     parser = OptionParser(usage)
 
     parser.add_option("--disable-corrpution-fix",
@@ -535,7 +535,7 @@ def main():
     parser.add_option("--frame-offset", type="int",
                       default=0,
                       help="add an integer offset to frame numbers")
-    
+
     (options, args) = parser.parse_args()
 
     if len(args)<1:
@@ -543,7 +543,7 @@ def main():
         return
 
     filename = args[0]
-    
+
     if (sys.platform.startswith('win') or
         sys.platform.startswith('darwin')):
         kws = dict(redirect=True,filename='playfmf.log')
