@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 kws=dict(
     )
 
-setup(name='FlyMovieFormat',
+setup(name='motmot.FlyMovieFormat',
       description='support for .fmf files (part of the motmot camera packages)',
       version='0.5.2',
       author='Andrew Straw',
