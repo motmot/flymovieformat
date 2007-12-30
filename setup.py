@@ -14,6 +14,7 @@ setup(name='motmot.FlyMovieFormat',
       packages = find_packages(),
       package_data = {'motmot.FlyMovieFormat':['playfmf.xrc',
                                                'matplotlibrc',
+                                               'test_raw8.fmf',
                                                'test_mono8.fmf',
                                                'description.txt']},
       entry_points = {
