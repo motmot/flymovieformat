@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import FlyMovieFormat
+import motmot.FlyMovieFormat.FlyMovieFormat as FlyMovieFormat
 
 input_filename = '20050304_1834.fmf'
 output_filename = 'blah_converted.fmf'

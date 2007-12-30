@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import glob
-import FlyMovieFormat
+import motmot.FlyMovieFormat.FlyMovieFormat as FlyMovieFormat
 
 # change this to current filenames
 input_filenames = glob.glob('/home/jbender/data/081704_a*.fmf')
@@ -29,7 +29,7 @@ for input_filename in input_filenames:
 
     print '%(input_filename)s (%(in_width)dx%(in_height)d, '\
           '%(fmax)d frames) ->'%locals()
-    
+
     print '    %(output_filename)s (%(width)dx%(height)d, '\
           '%(n_output_frames)d frames) :          '%locals(),
 
