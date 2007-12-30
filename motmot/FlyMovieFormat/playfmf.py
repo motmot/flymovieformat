@@ -351,9 +351,9 @@ class MyApp(wx.App):
             egg = pkg_env[name][0]
             modules = []
 
-            for name in egg.get_entry_map('FlyMovieFormat.exporter_plugins'):
+            for name in egg.get_entry_map('motmot.FlyMovieFormat.exporter_plugins'):
                 egg.activate()
-                entry_point = egg.get_entry_info('FlyMovieFormat.exporter_plugins', name)
+                entry_point = egg.get_entry_info('motmot.FlyMovieFormat.exporter_plugins', name)
                 try:
                     PluginClass = entry_point.load()
                 except Exception,x:
