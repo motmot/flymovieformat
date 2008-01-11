@@ -1,14 +1,17 @@
-function F = write_pngs( filename, f_start, nframes, show_progress, directory )
-% F = write_pngs( filename, f_start, nframes, show_progress, directory )
+function F = fmr_write_pngs( filename, f_start, nframes, show_progress, directory )
+% F = fmf_write_pngs( filename, f_start, nframes, show_progress, directory )
 %
 % writes FlyMovieFormat FILENAME frames to individual .png files in
 % DIRECTORY [defaults to ./]
 %
 % starts with frame F_START (1-based) [defaults to 1], writes NFRAMES
-% [defaults to inf]. Shows progress bar if SHOW_PROGRESS == 1 [defaults to
-% 0]
+% [defaults to inf]. Shows progress bar if SHOW_PROGRESS == 1 [defaults to 0]
+% Returns F, the number of frames written to png filess
 % 
-%
+% Designed to work with linux command:
+% ffmpeg -b 80000 -f mpeg2video -r 30 -i frame%06d.png movie.mpeg
+% # NOTE: frame numbers *must* start with 1
+% 
 % PTW 10/16/07
 
 if nargin < 5, directory = './'; end
