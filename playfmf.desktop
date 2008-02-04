@@ -7,3 +7,4 @@ Type=Application
 Categories=GNOME;GTK;Application;AudioVideo;
 Comment=View FMF Files
 Icon=gnobots2.xpm
+NoDisplay=true
