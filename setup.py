@@ -12,6 +12,11 @@ setup(name='motmot.FlyMovieFormat',
       url='http://code.astraw.com/projects/motmot',
       namespace_packages = ['motmot'],
       packages = find_packages(),
+      install_requires=[
+        'numpy>=1.0.4',
+        'wxPython>=2.8',
+        'motmot.imops>=0.5.2.dev'
+        ],
       package_data = {'motmot.FlyMovieFormat':['playfmf.xrc',
                                                'matplotlibrc',
                                                'test_raw8.fmf',
