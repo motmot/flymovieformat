@@ -4,7 +4,14 @@ kws=dict(
     )
 
 setup(name='motmot.FlyMovieFormat',
-      description='support for .fmf files (part of the motmot camera packages)',
+      description='support for .fmf (fly movie format) files',
+      long_description = """'Fly movie format' (or .fmf) files are a
+simple, uncompressed video format for storing data from digital video
+cameras. A fixed-size per frame means that random access is extremely
+fast, and a variety of formats (e.g. MONO8, YUV422) are supported.
+
+This is a subpackage of the motmot family of digital image utilities.
+""",
       version='0.5.2',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
