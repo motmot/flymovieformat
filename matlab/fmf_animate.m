@@ -47,9 +47,11 @@ if strncmpi(fliplr(filename),'fmf.',4);
 else
     trx_filename = strcat(filename,'.trx');
 end
-[background_image,trx_data] = read_trx(trx_filename);
-x=trx_data(1:2,:)-trx_data(4:5,:)+1;
-slopes = trx_data(3,:);
+if show_orientation == 1
+	[background_image,trx_data] = read_trx(trx_filename);
+	x=trx_data(1:2,:)-trx_data(4:5,:)+1;
+	slopes = trx_data(3,:);
+end
 
 [header_size, version, h, w, frame_size, max_n_frames, data_format] = fmf_read_header(filename);
 if( nframes ~= inf && nframes + f_start - 1 > max_n_frames ),
