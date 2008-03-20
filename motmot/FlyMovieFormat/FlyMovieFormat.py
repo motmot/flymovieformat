@@ -1,6 +1,3 @@
-# by Andrew Straw
-# modified by Kristin Branson
-
 #FlyMovieFormat
 from __future__ import division
 import sys
@@ -350,7 +347,7 @@ class FlyMovieSaver:
         self.n_frames = 0
         self.n_frame_pos = None
 
-    def _add_frame_v1(self,origframe,timestamp=nan):
+    def _add_frame_v1(self,origframe,timestamp=nan,error_if_not_fast=False):
         TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
         frame = nx.asarray(origframe)
         if self.framesize is None:
@@ -365,6 +362,8 @@ class FlyMovieSaver:
             nbytes = origframe.dump_to_file( self.file )
             assert nbytes == self._bytes_per_image
         else:
+            if error_if_not_fast:
+                origframe.dump_to_file # trigger AttributeError
             if not hasattr(self,'gave_dump_fd_warning'):
                 warnings.warn('could save faster if %s implemented dump_to_file()'%(str(type(origframe)),))
                 self.gave_dump_fd_warning = True
