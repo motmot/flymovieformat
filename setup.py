@@ -1,7 +1,13 @@
 from setuptools import setup, find_packages
+import os
 
-kws=dict(
-    )
+kws = {}
+if not int(os.getenv( 'DISABLE_INSTALL_REQUIRES','0' )):
+    kws['install_requires'] = [
+        'numpy>=1.0.4',
+        'wxPython>=2.8',
+        'motmot.imops>=0.5.2.dev'
+        ]
 
 setup(name='motmot.FlyMovieFormat',
       description='support for .fmf (fly movie format) files',
@@ -19,11 +25,6 @@ This is a subpackage of the motmot family of digital image utilities.
       url='http://code.astraw.com/projects/motmot',
       namespace_packages = ['motmot'],
       packages = find_packages(),
-      install_requires=[
-        'numpy>=1.0.4',
-        'wxPython>=2.8',
-        'motmot.imops>=0.5.2.dev'
-        ],
       package_data = {'motmot.FlyMovieFormat':['playfmf.xrc',
                                                'matplotlibrc',
                                                'test_raw8.fmf',
@@ -42,4 +43,4 @@ This is a subpackage of the motmot family of digital image utilities.
                                               'image_sequence = motmot.FlyMovieFormat.playfmf:ImageSequenceSaverPlugin',
                                        ],
     },
-      )
+      **kws)
