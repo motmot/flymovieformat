@@ -5,7 +5,7 @@ import struct
 import warnings
 import os.path
 
-import numpy as nx
+import numpy
 from numpy import nan
 
 import time
@@ -154,18 +154,18 @@ class FlyMovie:
         timestamp_buf = data[:self.timestamp_len]
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
 
-        frame = nx.fromstring(data[self.timestamp_len:],nx.uint8)
+        frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
         frame.shape = self.framesize
 
 ##        if self.format == 'MONO8':
-##            frame = nx.fromstring(data[self.timestamp_len:],nx.uint8)
+##            frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
 ##            frame.shape = self.framesize
 ##        elif self.format in ('YUV411','YUV422'):
-##            frame = nx.fromstring(data[self.timestamp_len:],nx.uint16)
+##            frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint16)
 ##            frame.shape = self.framesize
 ##        elif self.format in ('MONO16',):
 ##            print 'self.framesize',self.framesize
-##            frame = nx.fromstring(data[self.timestamp_len:],nx.uint8)
+##            frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
 ##            frame.shape = self.framesize
 ##        else:
 ##            raise NotImplementedError("Reading not implemented for %s format"%(self.format,))
@@ -221,7 +221,7 @@ class FlyMovie:
                 timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
                 self._all_timestamps.append( timestamp )
             self.next_frame = None
-            self._all_timestamps = nx.asarray(self._all_timestamps)
+            self._all_timestamps = numpy.asarray(self._all_timestamps)
         return self._all_timestamps
 
     def seek(self,frame_number):
@@ -243,11 +243,31 @@ class FlyMovie:
     def get_frame_at_or_before_timestamp(self, timestamp):
         tss = self.get_all_timestamps()
         at_or_before_timestamp_cond = tss <= timestamp
-        nz = nx.nonzero(at_or_before_timestamp_cond)
+        nz = numpy.nonzero(at_or_before_timestamp_cond)
         if len(nz)==0:
             raise ValueError("no frames at or before timestamp given")
         fno = nz[-1]
         return self.get_frame(fno)
+
+def mmap_flymovie( *args, **kwargs ):
+    supported_formats = ['MONO8','RAW8']
+    fmf = FlyMovie(*args,**kwargs)
+
+    if not fmf.format in supported_formats:
+        raise NotImplementedError("only support %s formats for mmap"%( str(supported_formats), ))
+    if not fmf.bits_per_pixel == 8:
+        raise NotImplementedError("only support 8bpp format for mmap")
+
+    my_dtype = numpy.dtype([('timestamp', '<f8'),
+                            ('frame', '|u1', fmf.framesize )])
+    assert my_dtype.itemsize == fmf.bytes_per_chunk
+
+    offset = fmf.chunk_start
+    shape = (fmf.get_n_frames(),)
+    ra = numpy.memmap( fmf.filename, dtype=my_dtype, offset=offset,
+                       mode='r', shape=shape)
+    fmf.close()
+    return ra
 
 class FlyMovieSaver:
     def __init__(self,
@@ -349,7 +369,7 @@ class FlyMovieSaver:
 
     def _add_frame_v1(self,origframe,timestamp=nan,error_if_not_fast=False):
         TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
-        frame = nx.asarray(origframe)
+        frame = numpy.asarray(origframe)
         if self.framesize is None:
             self._do_v1_header(frame)
         else:

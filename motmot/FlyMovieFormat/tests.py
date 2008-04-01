@@ -33,6 +33,21 @@ class TestFMF(unittest.TestCase):
             assert numpy.allclose(frame,frames[i])
             assert timestamp == timestamps[i]
 
+    def test_mmap(self):
+        for filename in fmf_filenames:
+            fmf = FlyMovieFormat.FlyMovie( filename )
+            ra = FlyMovieFormat.mmap_flymovie( filename )
+            n_frames = len(ra)
+            assert n_frames == fmf.get_n_frames()
+
+            for i in range(n_frames):
+                frame, timestamp = fmf.get_next_frame()
+                mmap_frame = ra['frame'][i]
+                assert mmap_frame.shape == frame.shape
+                assert numpy.allclose( mmap_frame, frame )
+                assert timestamp == ra['timestamp'][i]
+            fmf.close()
+
 def get_test_suite():
     ts=unittest.TestSuite([unittest.makeSuite(TestFMF),
                            ])
