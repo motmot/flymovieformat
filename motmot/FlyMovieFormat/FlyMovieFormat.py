@@ -511,10 +511,18 @@ class FlyMovieSaver:
         self._add_frames_v2([frame],[timestamp])
 
     def close(self):
+        if not hasattr(self,'file'):
+            # hmm, we've already been closed
+            import warnings
+            warnings.warn("attempting to close multiple times")
+            return
+
         if self.n_frames == 0:
             warnings.warn('no frames in FlyMovie')
             # no frames added
-            self.file.close()
+            if self.opened_file:
+                # We opened it, we can close it.
+                self.file.close()
             del self.file
             return
 
