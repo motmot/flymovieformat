@@ -2,9 +2,12 @@ import unittest
 import FlyMovieFormat
 import pkg_resources # requires setuptools
 import numpy
+import tempfile
 
 fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in ['test_mono8.fmf',
                                                                        'test_raw8.fmf',
+                                                                       'test_yuv422.fmf',
+                                                                       'test_mono32f.fmf',
                                                                        ]]
 
 class TestFMF(unittest.TestCase):
@@ -13,6 +16,40 @@ class TestFMF(unittest.TestCase):
         for filename in fmf_filenames:
             fmf = FlyMovieFormat.FlyMovie(filename)
             frame, timestamp = fmf.get_next_frame()
+
+    def test_roundtrip(self):
+        for filename in fmf_filenames:
+
+            for version in [3]:
+                # write a new movie
+                fmf_in = FlyMovieFormat.FlyMovie(filename)
+                tmpfile = tempfile.TemporaryFile()
+                fmf_out = FlyMovieFormat.FlyMovieSaver(tmpfile,
+                                                       version=version,
+                                                       format=fmf_in.get_format(),
+                                                       bits_per_pixel=fmf_in.get_bits_per_pixel(),
+                                                       )
+                for i in range(fmf_in.get_n_frames()):
+                    frame, timestamp = fmf_in.get_next_frame()
+                    fmf_out.add_frame( frame, timestamp )
+                fmf_in.close()
+                fmf_out.close()
+
+                tmpfile.seek(0)
+
+                # now read our new movie and compare it
+                fmf_in = FlyMovieFormat.FlyMovie(filename)
+                fmf_out = FlyMovieFormat.FlyMovie(tmpfile)
+                assert fmf_in.get_n_frames() == fmf_out.get_n_frames()
+                for i in range(fmf_in.get_n_frames()):
+                    frame_in, timestamp_in = fmf_in.get_next_frame()
+                    frame_out, timestamp_out = fmf_out.get_next_frame()
+                    assert timestamp_in == timestamp_out
+                    assert frame_in.shape == frame_out.shape
+                    assert numpy.allclose(frame_in,frame_out)
+                fmf_in.close()
+                fmf_out.close()
+                tmpfile.close()
 
     def test_random_vs_sequential_reads(self):
         fmf = FlyMovieFormat.FlyMovie(
@@ -54,4 +91,8 @@ def get_test_suite():
     return ts
 
 if __name__=='__main__':
-    unittest.main()
+    if 1:
+        ts = get_test_suite()
+        ts.debug()
+    else:
+        unittest.main()

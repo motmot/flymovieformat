@@ -489,8 +489,12 @@ class MyApp(wx.App):
             saver = plugin.get_saver(dlg,self.format,self.width_height)
             dlg.Close()
 
-            crop_xmin = xmin*bpp[self.format]//8
-            crop_xmax = (xmax+1)*bpp[self.format]//8
+            if self.format in ['YUV422','YUV411']:
+                crop_xmin = xmin*bpp[self.format]//8
+                crop_xmax = (xmax+1)*bpp[self.format]//8
+            else:
+                crop_xmin = xmin
+                crop_xmax = xmax+1
 
             for i in xrange(start,stop+1,interval):
                 orig_frame,timestamp = self.fly_movie.get_frame(
