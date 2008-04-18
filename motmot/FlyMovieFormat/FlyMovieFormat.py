@@ -65,7 +65,6 @@ class FlyMovie:
             self.filename = None
 
         r=self.file.read # shorthand
-        t=self.file.tell # shorthand
         size=struct.calcsize
         unpack=struct.unpack
 
