@@ -372,14 +372,13 @@ class FlyMovieSaver:
             self.file.write(struct.pack(FORMAT_LEN_FMT,format_len))
             self.file.write(format)
             self.file.write(struct.pack(BITS_PER_PIXEL_FMT,bits_per_pixel))
-
-            self.format = format
-            self.bits_per_pixel = bits_per_pixel
         else:
-            if format != 'MONO8' or bits_per_pixel != 8:
-                raise ValueError("version 1 fmf files only support MONO8 8bpp images")
-            self.format = 'MONO8'
-            self.bits_per_pixel = 8
+            if format is None: format = 'MONO8'
+            if bits_per_pixel is None: bits_per_pixel = 8
+            if format != 'MONO8' or bits_per_pixel != 8: 
+                raise ValueError("version 1 fmf files only support MONO8 8bpp images") 
+        self.format = format
+        self.bits_per_pixel = bits_per_pixel
 
         self.framesize = None
 
