@@ -403,7 +403,7 @@ class FlyMovieSaver:
             if error_if_not_fast:
                 origframe.dump_to_file # trigger AttributeError
             if not hasattr(self,'gave_dump_fd_warning'):
-                warnings.warn('could save faster if %s implemented dump_to_file()'%(str(type(origframe)),))
+                #warnings.warn('could save faster if %s implemented dump_to_file()'%(str(type(origframe)),))
                 self.gave_dump_fd_warning = True
             b2 = frame.tostring()
             if len(b2) != self._bytes_per_image:
@@ -511,12 +511,11 @@ class FlyMovieSaver:
     def close(self):
         if not hasattr(self,'file'):
             # hmm, we've already been closed
-            import warnings
-            warnings.warn("attempting to close multiple times")
+            #warnings.warn("attempting to close multiple times")
             return
 
         if self.n_frames == 0:
-            warnings.warn('no frames in FlyMovie')
+            #warnings.warn('no frames in FlyMovie')
             # no frames added
             if self.opened_file:
                 # We opened it, we can close it.
