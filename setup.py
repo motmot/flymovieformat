@@ -29,6 +29,7 @@ This is a subpackage of the motmot family of digital image utilities.
                                                'matplotlibrc',
                                                'test_raw8.fmf',
                                                'test_mono8.fmf',
+                                               'test_yuv422.fmf',
                                                'description.txt']},
       entry_points = {
     'console_scripts': ['fmf2bmps = motmot.FlyMovieFormat.fmf2bmps:main',
