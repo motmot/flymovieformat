@@ -15,6 +15,7 @@ import motmot.imops.imops as imops
 
 import wx
 import wx.xrc as xrc
+import numpy
 
 # force use of numpy by matplotlib(FlyMovieFormat uses numpy)
 import matplotlib
@@ -51,12 +52,20 @@ class ImageSequenceSaverPlugin(object):
                 self.count += 1
                 if self.flip_upside_down:
                     save_frame = save_frame[::-1,:] # flip
-                if self.format=='MONO8':
-                    im=Image.fromstring('L',self.width_height,save_frame.tostring())
+                if self.format in ['MONO8','RAW8']:
+                    height,width = save_frame.shape
+                    im=Image.fromstring('L',(width,height),save_frame.tostring())
+                elif self.format in ['MONO32f']:
+                    save_frame = save_frame.astype( numpy.uint8 )
+                    height,width = save_frame.shape
+                    im=Image.fromstring('L',(width,height),save_frame.tostring())
                 elif self.format in ['RGB8','ARGB8','YUV411','YUV422']:
                     rgb8 = imops.to_rgb8(self.format,save_frame)
-                    im=Image.fromstring('RGB', self.width_height,
+                    height,width,depth = rgb8.shape
+                    im=Image.fromstring('RGB', (width,height),
                                         rgb8.tostring())
+                else:
+                    raise NotImplementedError("don't know how to save format '%s'"%self.format)
                 im.save(fname)
             def close(self):
                 return
@@ -95,58 +104,69 @@ class ImageSequenceSaverPlugin(object):
 #            dlg2._close_parent=True
             dlg2.Close(True)
         def OnImageSequenceBrowse(event):
-            dlg3 = wx.FileDialog(wx_parent,"Select basename...",
-                                 os.getcwd(),"",
-                                 "",wx.SAVE)
+            if wx_parent is not None:
+                dlg3 = wx.FileDialog(wx_parent,"Select basename...",
+                                     os.getcwd(),"",
+                                     "",wx.SAVE)
+                try:
+                    if dlg3.ShowModal()==wx.ID_OK:
+                        basename=dlg3.GetPath()
+                        xrc.XRCCTRL(dlg2,"image_basename").SetValue(basename)
+                finally:
+                    dlg3.Destroy()
+
+        if wx_parent is not None:
+            dlg2 = RES.LoadDialog(wx_parent,"EXPORT_IMAGE_SEQUENCE")
+            dlg2.filename = None
+    #        dlg2._close_parent=False
+
+            wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"image_basename_browse").GetId(),
+                       OnImageSequenceBrowse)
+            wx.EVT_TEXT(dlg2,xrc.XRCCTRL(dlg2,"image_basename").GetId(),
+                     OnTextEvent)
+            wx.EVT_TEXT(dlg2,xrc.XRCCTRL(dlg2,"image_number_format").GetId(),
+                     OnTextEvent)
+            wx.EVT_CHOICE(dlg2,xrc.XRCCTRL(dlg2,"image_extension_choice").GetId(),
+                       OnChoiceEvent)
+            wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"cancel_button").GetId(),
+                       OnCancelImageSequence)
+            wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"save_button").GetId(),
+                       OnSaveImageSequence)
+
+            filename = None
             try:
-                if dlg3.ShowModal()==wx.ID_OK:
-                    basename=dlg3.GetPath()
-                    xrc.XRCCTRL(dlg2,"image_basename").SetValue(basename)
+                dlg2.ShowModal()
+                filename = dlg2.filename
+                flip_upside_down = xrc.XRCCTRL(dlg2,"flip_upside_down").GetValue()
+    #            if dlg2._close_parent:
+    #                dlg.Close()
             finally:
-                dlg3.Destroy()
-
-        dlg2 = RES.LoadDialog(wx_parent,"EXPORT_IMAGE_SEQUENCE")
-        dlg2.filename = None
-#        dlg2._close_parent=False
-
-        wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"image_basename_browse").GetId(),
-                   OnImageSequenceBrowse)
-        wx.EVT_TEXT(dlg2,xrc.XRCCTRL(dlg2,"image_basename").GetId(),
-                 OnTextEvent)
-        wx.EVT_TEXT(dlg2,xrc.XRCCTRL(dlg2,"image_number_format").GetId(),
-                 OnTextEvent)
-        wx.EVT_CHOICE(dlg2,xrc.XRCCTRL(dlg2,"image_extension_choice").GetId(),
-                   OnChoiceEvent)
-        wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"cancel_button").GetId(),
-                   OnCancelImageSequence)
-        wx.EVT_BUTTON(dlg2, xrc.XRCCTRL(dlg2,"save_button").GetId(),
-                   OnSaveImageSequence)
-
-        filename = None
-        try:
-            dlg2.ShowModal()
-            filename = dlg2.filename
-            flip_upside_down = xrc.XRCCTRL(dlg2,"flip_upside_down").GetValue()
-#            if dlg2._close_parent:
-#                dlg.Close()
-        finally:
-            dlg2.Destroy()
+                dlg2.Destroy()
+        else:
+            filename = 'filename%02d.png'
+            flip_upside_down = False
         return ImageSequenceSaver(filename,flip_upside_down,format,width_height)
 
 class GenericSaverPlugin(object):
     def get_saver(self,wx_parent,format,widthheight):
         wildcard = self.get_wildcard()
-        wildcard += "|All files (*.*)|*.*"
-        dlg2 = wx.FileDialog(wx_parent,"Save movie as...",os.getcwd(),"",
-                            wildcard,wx.SAVE)
-        filename = None
-        try:
-            if dlg2.ShowModal()==wx.ID_OK:
-                filename=dlg2.GetPath()
-        finally:
-            dlg2.Destroy()
-        if filename is None:
-            return
+        if wx_parent is not None:
+            wildcard += "|All files (*.*)|*.*"
+            dlg2 = wx.FileDialog(wx_parent,"Save movie as...",os.getcwd(),"",
+                                wildcard,wx.SAVE)
+            filename = None
+            try:
+                if dlg2.ShowModal()==wx.ID_OK:
+                    filename=dlg2.GetPath()
+            finally:
+                dlg2.Destroy()
+            if filename is None:
+                return
+        else:
+            ext = wildcard.split('|')[-1]
+            assert ext[0]=='*'
+            ext = ext[1:]
+            filename = 'test_fmf_export' + ext
         saver = self.sub_get_saver(wx_parent,filename,format,widthheight)
         return saver
 
@@ -496,7 +516,7 @@ class MyApp(wx.App):
                 crop_xmin = xmin
                 crop_xmax = xmax+1
 
-            for i in xrange(start,stop+1,interval):
+            for i in range(start,stop+1,interval):
                 orig_frame,timestamp = self.fly_movie.get_frame(
                     i,
                     allow_partial_frames=self.allow_partial_frames)

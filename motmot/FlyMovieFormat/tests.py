@@ -2,7 +2,7 @@ import unittest
 import FlyMovieFormat
 import pkg_resources # requires setuptools
 import numpy
-import tempfile
+import tempfile, os, shutil
 
 fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in ['test_mono8.fmf',
                                                                        'test_raw8.fmf',
@@ -85,8 +85,55 @@ class TestFMF(unittest.TestCase):
                 assert timestamp == ra['timestamp'][i]
             fmf.close()
 
+class TestExporterPlugins(unittest.TestCase):
+    def setUp(self):
+        # load plugins
+        PluginClasses = []
+        pkg_env = pkg_resources.Environment()
+        for name in pkg_env:
+            egg = pkg_env[name][0]
+            modules = []
+
+            for name in egg.get_entry_map('motmot.FlyMovieFormat.exporter_plugins'):
+                egg.activate()
+                entry_point = egg.get_entry_info('motmot.FlyMovieFormat.exporter_plugins', name)
+                PluginClass = entry_point.load()
+                PluginClasses.append( PluginClass )
+                modules.append(entry_point.module_name)
+        self.plugins = [PluginClass() for PluginClass in PluginClasses]
+
+    def test_plugins(self):
+        bpp = FlyMovieFormat.format2bpp
+        for filename in fmf_filenames:
+            fmf = FlyMovieFormat.FlyMovie( filename )
+            format = fmf.get_format()
+            width_height = (fmf.get_width()//(bpp[format]//8),
+                             fmf.get_height())
+            for plugin in self.plugins:
+                dlg = None
+                origdir = os.path.abspath(os.curdir)
+                tmpdir = tempfile.mkdtemp()
+                os.chdir(tmpdir)
+                try:
+                    saver = plugin.get_saver(dlg,format,width_height)
+
+                    ymin = 0
+                    crop_xmin = 0
+                    ymax = 9
+                    crop_xmax = 8
+
+                    for i in range(2):
+                        orig_frame,timestamp = fmf.get_frame(i)
+                        save_frame = orig_frame[0:10,0:8]
+                        saver.save( save_frame, timestamp )
+                    saver.close()
+                finally:
+                    os.chdir(origdir)
+                    shutil.rmtree(tmpdir)
+
 def get_test_suite():
     ts=unittest.TestSuite([unittest.makeSuite(TestFMF),
+                           unittest.makeSuite(TestExporterPlugins),
                            ])
     return ts
 
