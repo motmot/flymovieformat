@@ -1,0 +1,18 @@
+# emacs, this is -*-Python-*- mode
+import sys, collections
+
+buildkws = collections.defaultdict(list)
+if sys.platform.startswith('linux'):
+    # Tested on ubuntu 8.04
+    # Build-Depends: libavformat-dev, libswscale-dev, scons
+
+    buildkws['LIBS'].extend( ['avformat'] )
+    buildkws['CPPPATH'].extend( ['/usr/include/ffmpeg'] )
+
+buildkws = dict(buildkws) # convert to dict
+
+Program(source=['fmfcompress.c'],
+        **buildkws)
+Program('fmfuncompress.c',
+        **buildkws)
+
