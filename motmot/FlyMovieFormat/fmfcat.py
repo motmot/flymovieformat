@@ -1,6 +1,7 @@
 from optparse import OptionParser
 import sys
 import motmot.FlyMovieFormat.FlyMovieFormat as FMF
+import numpy
 
 if 1:
     import signal
@@ -12,6 +13,7 @@ def doit( filename,
           rated=1,  # denom
           aspectn = 1, # numerator
           aspectd = 1, # denom
+          rotate_180 = False,
           ):
     fmf = FMF.FlyMovie(filename)
     if fmf.get_format() not in ['MONO8','RAW8']:
@@ -33,7 +35,11 @@ def doit( filename,
             frame,timestamp = fmf.get_next_frame()
         except FMF.NoMoreFramesException, err:
             break
+
         out_fd.write('%(Y4M_FRAME_MAGIC)s\n'%locals())
+
+        if rotate_180:
+            frame = numpy.rot90(numpy.rot90(frame))
 
         for i in range(height):
             out_fd.write(frame[i,:].tostring())
@@ -47,9 +53,12 @@ format. This allows an .fmf file to be converted to any format that
 ffmpeg supports. For example, to convert the file x.fmf to x.avi using
 the MPEG4 codec:
 
-fmfcat x.fmf | ffmpeg -vcodec msmpeg4v2 -i - x.avi"""
+%prog x.fmf | ffmpeg -vcodec msmpeg4v2 -i - x.avi"""
 
     parser = OptionParser(usage)
+
+    parser.add_option('--rotate-180', action='store_true',
+                      default=False )
 
     (options, args) = parser.parse_args()
 
@@ -60,6 +69,7 @@ fmfcat x.fmf | ffmpeg -vcodec msmpeg4v2 -i - x.avi"""
     filename = args[0]
 
     doit( filename = args[0],
+          rotate_180 = options.rotate_180,
           )
 
 if __name__=='__main__':
