@@ -204,13 +204,7 @@ class FlyMovie:
             return frame, timestamp
 
     def get_frame(self,frame_number,allow_partial_frames=False):
-        if frame_number < 0:
-            frame_number = self.n_frames + frame_number
-        if frame_number < 0:
-            raise IndexError("negative index out of range (movie has no frames)")
-        seek_to = self.chunk_start+self.bytes_per_chunk*frame_number
-        self.file.seek(seek_to)
-        self.next_frame = None
+        self.seek(frame_number)
         return self.get_next_frame(allow_partial_frames=allow_partial_frames)
 
     def get_all_timestamps(self):
@@ -232,6 +226,8 @@ class FlyMovie:
     def seek(self,frame_number):
         if frame_number < 0:
             frame_number = self.n_frames + frame_number
+        if frame_number < 0:
+            raise IndexError("negative index out of range (movie has no frames)")
         seek_to = self.chunk_start+self.bytes_per_chunk*frame_number
         self.file.seek(seek_to)
         self.next_frame = None
@@ -375,8 +371,8 @@ class FlyMovieSaver:
         else:
             if format is None: format = 'MONO8'
             if bits_per_pixel is None: bits_per_pixel = 8
-            if format != 'MONO8' or bits_per_pixel != 8: 
-                raise ValueError("version 1 fmf files only support MONO8 8bpp images") 
+            if format != 'MONO8' or bits_per_pixel != 8:
+                raise ValueError("version 1 fmf files only support MONO8 8bpp images")
         self.format = format
         self.bits_per_pixel = bits_per_pixel
 
