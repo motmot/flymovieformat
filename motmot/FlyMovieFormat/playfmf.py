@@ -423,14 +423,15 @@ class MyApp(wx.App):
         frame,timestamp = self.fly_movie.get_frame(
             0, allow_partial_frames=self.allow_partial_frames)
         if corruption_fix:
+            test_frame = self.n_frames
             while 1:
-                test_frame = self.n_frames-1
+                test_frame -= 1
                 try:
                     self.fly_movie.get_frame(
                         test_frame,
                         allow_partial_frames=True)
                 except FlyMovieFormat.NoMoreFramesException:
-                    print 'no frame %d, shortening movie'%test_frame
+                    print >> sys.stderr,'no frame %d, shortening movie'%test_frame
                 else:
                     # if we get here, it means we had a good frame
                     self.n_frames = test_frame+1
