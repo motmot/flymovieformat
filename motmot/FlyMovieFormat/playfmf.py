@@ -411,14 +411,14 @@ class MyApp(wx.App):
         # update display
         self.OnScroll(None)
 
-    def OnNewMovie(self,filename,corruption_fix=False):
+    def OnNewMovie(self,flymovie,corruption_fix=False):
         if corruption_fix:
             self.allow_partial_frames=True
         else:
             self.allow_partial_frames=False
         a = self.plotpanel.fig.add_subplot(111) # not really new, just gets axes
 
-        self.fly_movie = FlyMovieFormat.FlyMovie(filename)
+        self.fly_movie = flymovie
         self.n_frames = self.fly_movie.get_n_frames()
         frame,timestamp = self.fly_movie.get_frame(
             0, allow_partial_frames=self.allow_partial_frames)
@@ -444,8 +444,9 @@ class MyApp(wx.App):
         slider.SetRange( self.frame_offset+0, max(self.frame_offset+self.n_frames-1,1) )
         slider.SetValue( self.frame_offset+frame_number )
 
-        self.frame.SetTitle('playfmf: %s'%(filename,)) # window title
-        self.fly_movie = FlyMovieFormat.FlyMovie(filename)
+        # window title
+        self.frame.SetTitle('playfmf: %s'%(self.fly_movie.filename,))
+
         self.format = self.fly_movie.get_format()
         self.width_height = (self.fly_movie.get_width()//(bpp[self.format]//8),
                              self.fly_movie.get_height())
@@ -575,7 +576,8 @@ def main():
     else:
         kws = {}
     app = MyApp(**kws)
-    app.OnNewMovie(filename,
+    flymovie = FlyMovieFormat.FlyMovie(filename)
+    app.OnNewMovie(flymovie,
                    corruption_fix=options.corruption_fix)
     app.update_frame_offset(options.frame_offset)
     app.MainLoop()
