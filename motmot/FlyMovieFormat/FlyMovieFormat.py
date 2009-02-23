@@ -360,9 +360,11 @@ class FlyMovieSaver:
     	    self.file.write(self.compressor)
 
         if version == 3:
-            if type(format) != str:
+            if not isinstance(format,str):
                 raise ValueError("format must be string (e.g. 'MONO8', 'YUV422')")
-            if type(bits_per_pixel) != int:
+            if bits_per_pixel is None:
+                bits_per_pixel = format2bpp[format]
+            if not isinstance(bits_per_pixel,int):
                 raise ValueError("bits_per_pixel must be integer")
             format_len = len(format)
             self.file.write(struct.pack(FORMAT_LEN_FMT,format_len))
