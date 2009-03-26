@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, time, os, gc
+import sys, time, os, gc, datetime
 from optparse import OptionParser
 
 import pkg_resources # from setuptools
@@ -476,8 +476,8 @@ class MyApp(wx.App):
         label = xrc.XRCCTRL(self.frame,"time_abs_label")
 
         time_fmt = '%Y-%m-%d %H:%M:%S %Z%z'
-        label.SetLabel('%.3f (sec) %s'%(timestamp,
-                                        time.strftime(time_fmt, time.localtime(timestamp))))
+        my_datetime = datetime.datetime.fromtimestamp(timestamp)
+        label.SetLabel('%.3f (sec) %s'%(timestamp, my_datetime.isoformat()))
 
     def OnQuit(self, event):
         self.frame.Close(True)
