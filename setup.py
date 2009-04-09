@@ -37,6 +37,7 @@ This is a subpackage of the motmot family of digital image utilities.
                         'fmf_collapse = motmot.FlyMovieFormat.fmf_collapse:main',
                         'fmf_info = motmot.FlyMovieFormat.fmf_info:main',
                         'fmfcat = motmot.FlyMovieFormat.fmfcat:main',
+                        'ffmpeg2fmf = motmot.FlyMovieFormat.ffmpeg2fmf:main',
                         ],
     'gui_scripts': ['playfmf = motmot.FlyMovieFormat.playfmf:main',
                     'fmf_plottimestamps = motmot.FlyMovieFormat.fmf_plottimestamps:main',
