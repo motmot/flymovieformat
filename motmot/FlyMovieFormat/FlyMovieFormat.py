@@ -113,16 +113,8 @@ class FlyMovie:
         self._all_timestamps = None # cache
 
     def compute_n_frames_from_file_size(self):
-        orig_loc = self.file.tell()
-        try:
-            # seek to end of the movie
-            self.file.seek(0,2)
-            # get the byte position
-            eb = self.file.tell()
-            # compute number of frames using bytes_per_chunk
-            n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
-        finally:
-            self.file.seek(orig_loc,0)
+        eb = os.fstat(self.file.fileno()).st_size
+        n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
         return n_frames
 
     def close(self):
