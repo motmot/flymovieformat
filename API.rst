@@ -28,3 +28,11 @@ In Python accessing frames from an .fmf files is as easy as::
   fmf = FMF.FlyMovie(fname)
   for frame_number in range(10):
       frame,timestamp = fmf.get_frame(frame_number)
+
+More information
+================
+
+.. toctree::
+  :maxdepth: 1
+
+  fmf-format-spec.rst
