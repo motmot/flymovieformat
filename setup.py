@@ -41,6 +41,7 @@ This is a subpackage of the motmot family of digital image utilities.
                         ],
     'gui_scripts': ['playfmf = motmot.FlyMovieFormat.playfmf:main',
                     'fmf_plottimestamps = motmot.FlyMovieFormat.fmf_plottimestamps:main',
+                    'fmf_tail = motmot.FlyMovieFormat.fmf_tail:main',
                     ],
     'motmot.FlyMovieFormat.exporter_plugins':['txt = motmot.FlyMovieFormat.playfmf:TxtFileSaverPlugin',
                                               'fmf = motmot.FlyMovieFormat.playfmf:FmfFileSaverPlugin',
