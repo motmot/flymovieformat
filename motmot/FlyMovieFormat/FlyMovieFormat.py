@@ -96,14 +96,7 @@ class FlyMovie:
         self.next_frame = None
 
 	if self.n_frames == 0: # unknown movie length, read to find out
-            # seek to end of the movie
-            self.file.seek(0,2)
-            # get the byte position
-            eb = self.file.tell()
-            # compute number of frames using bytes_per_chunk
-            self.n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
-            # seek back to the start
-            self.file.seek(self.chunk_start,0)
+            self.n_frames = self.compute_n_frames_from_file_size()
 
         if check_integrity:
             n_frames_ok = False
@@ -118,6 +111,19 @@ class FlyMovie:
 	    self.file.seek(self.chunk_start) # go back to beginning
 
         self._all_timestamps = None # cache
+
+    def compute_n_frames_from_file_size(self):
+        orig_loc = self.file.tell()
+        try:
+            # seek to end of the movie
+            self.file.seek(0,2)
+            # get the byte position
+            eb = self.file.tell()
+            # compute number of frames using bytes_per_chunk
+            n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
+        finally:
+            self.file.seek(orig_loc,0)
+        return n_frames
 
     def close(self):
         if self.opened_file:
