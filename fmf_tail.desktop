@@ -1,0 +1,7 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=fmf_tail
+MimeType=video/fmf
+Exec=/usr/bin/fmf_tail %f
+Type=Application
+NoDisplay=true
