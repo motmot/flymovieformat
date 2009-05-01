@@ -22,7 +22,7 @@ This is a subpackage of the motmot family of digital image utilities.
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       license='BSD',
-      url='http://code.astraw.com/projects/motmot',
+      url='http://code.astraw.com/projects/motmot/fly-movie-format.html',
       namespace_packages = ['motmot'],
       packages = find_packages(),
       package_data = {'motmot.FlyMovieFormat':['playfmf.xrc',
