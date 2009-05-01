@@ -19,15 +19,12 @@ import numpy
 
 # force use of numpy by matplotlib(FlyMovieFormat uses numpy)
 import matplotlib
-from matplotlib import rcParams
-rcParams['numerix'] = 'numpy'
 matplotlib.use('WXAgg')
 
 import matplotlib.cm as cm
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
-import matplotlib.numerix as numerix
 import matplotlib.ticker
 
 RES = xrc.EmptyXmlResource()
@@ -285,12 +282,6 @@ class PlotPanel(wx.Panel):
     def onEraseBackground(self, evt):
         # this is supposed to prevent redraw flicker on some X servers...
         pass
-
-##     def convert_to_matplotlib(self,frame):
-##         # XXX this should not be needed -- figure out what's wrong
-##         frame = frame.astype(numerix.Float)
-##         frame = frame/255.0
-##         return frame
 
     def set_array(self,frame):
         frame = self._convert_to_displayable(frame)
