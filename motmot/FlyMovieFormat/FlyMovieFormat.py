@@ -112,9 +112,13 @@ class FlyMovie:
 
         self._all_timestamps = None # cache
 
-    def compute_n_frames_from_file_size(self):
+    def compute_n_frames_from_file_size(self,only_full_frames=False):
         eb = os.fstat(self.file.fileno()).st_size
-        n_frames = int(math.ceil((eb-self.chunk_start)/self.bytes_per_chunk))
+        if only_full_frames:
+            round = math.floor
+        else:
+            round = math.ceil
+        n_frames = int(round((eb-self.chunk_start)/self.bytes_per_chunk))
         return n_frames
 
     def close(self):
