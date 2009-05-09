@@ -551,7 +551,7 @@ def main():
 
     parser = OptionParser(usage)
 
-    parser.add_option("--disable-corrpution-fix",
+    parser.add_option("--disable-corruption-fix",
                       action='store_false', default=True,
                       dest='corruption_fix',
                       help="disable automatic fixing of corrupted .fmf files")
