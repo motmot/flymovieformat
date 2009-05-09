@@ -30,7 +30,7 @@ import matplotlib.ticker
 RES = xrc.EmptyXmlResource()
 RES.LoadFromString(open(RESFILE).read())
 
-bpp = FlyMovieFormat.format2bpp
+bpp = FlyMovieFormat.format2bpp_func
 
 class ImageSequenceSaverPlugin(object):
     def get_description(self):
@@ -193,7 +193,7 @@ class FmfFileSaverPlugin(GenericSaverPlugin):
                 self.fmf_file = FlyMovieFormat.FlyMovieSaver(filename,
                                                              version=3,
                                                              format=format,
-                                                             bits_per_pixel=bpp[format])
+                                                             bits_per_pixel=bpp(format))
             def save(self,save_frame,timestamp):
                 self.fmf_file.add_frame(save_frame,timestamp)
             def close(self):
@@ -246,6 +246,9 @@ class PlotPanel(wx.Panel):
             frame = imops.to_rgb8(self.format,frame)
         elif self.format in ['MONO8','MONO16']:
             frame = imops.to_mono8(self.format,frame)
+        elif self.format.startswith('MONO8:'):
+            # bayer
+            frame = imops.to_rgb8(self.format,frame)
         #frame = self.convert_to_matplotlib(frame)
         return frame
 
@@ -402,7 +405,9 @@ class MyApp(wx.App):
         # update display
         self.OnScroll(None)
 
-    def OnNewMovie(self,flymovie,corruption_fix=False):
+    def OnNewMovie(self,flymovie,
+                   corruption_fix=False,
+                   ):
         if corruption_fix:
             self.allow_partial_frames=True
         else:
@@ -439,7 +444,7 @@ class MyApp(wx.App):
         self.frame.SetTitle('playfmf: %s'%(self.fly_movie.filename,))
 
         self.format = self.fly_movie.get_format()
-        self.width_height = (self.fly_movie.get_width()//(bpp[self.format]//8),
+        self.width_height = (self.fly_movie.get_width()//(bpp(self.format)//8),
                              self.fly_movie.get_height())
 
         self.plotpanel.init_plot_data(frame,self.format)
@@ -503,8 +508,8 @@ class MyApp(wx.App):
             dlg.Close()
 
             if self.format in ['YUV422','YUV411']:
-                crop_xmin = xmin*bpp[self.format]//8
-                crop_xmax = (xmax+1)*bpp[self.format]//8
+                crop_xmin = xmin*bpp(self.format)//8
+                crop_xmax = (xmax+1)*bpp(self.format)//8
             else:
                 crop_xmin = xmin
                 crop_xmax = xmax+1
@@ -569,7 +574,8 @@ def main():
     app = MyApp(**kws)
     flymovie = FlyMovieFormat.FlyMovie(filename)
     app.OnNewMovie(flymovie,
-                   corruption_fix=options.corruption_fix)
+                   corruption_fix=options.corruption_fix,
+                   )
     app.update_frame_offset(options.frame_offset)
     app.MainLoop()
 

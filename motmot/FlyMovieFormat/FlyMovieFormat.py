@@ -39,6 +39,15 @@ format2bpp = { # convert format to bits per pixel
     'YUV422':16,
     }
 
+def format2bpp_func(format):
+    result = format2bpp.get(format,None)
+    if result is None:
+        if format.startswith('MONO8:'):
+            result=8
+        else:
+            raise ValueError('unknown format: %s'%format)
+    return result
+
 class NoMoreFramesException( Exception ):
     pass
 
@@ -165,7 +174,7 @@ class FlyMovie:
         timestamp_buf = data[:self.timestamp_len]
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
 
-        if self.format in ('MONO8','RAW8'):
+        if self.format in ('MONO8','RAW8') or self.format.startswith('MONO8:'):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
         elif self.format in ('YUV422'):
@@ -365,7 +374,7 @@ class FlyMovieSaver:
             if not isinstance(format,str):
                 raise ValueError("format must be string (e.g. 'MONO8', 'YUV422')")
             if bits_per_pixel is None:
-                bits_per_pixel = format2bpp[format]
+                bits_per_pixel = format2bpp_func(format)
             if not isinstance(bits_per_pixel,int):
                 raise ValueError("bits_per_pixel must be integer")
             format_len = len(format)
