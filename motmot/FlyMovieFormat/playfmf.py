@@ -471,9 +471,11 @@ class MyApp(wx.App):
 
         label = xrc.XRCCTRL(self.frame,"time_abs_label")
 
-        time_fmt = '%Y-%m-%d %H:%M:%S %Z%z'
-        my_datetime = datetime.datetime.fromtimestamp(timestamp)
-        label.SetLabel('%.3f (sec) %s'%(timestamp, my_datetime.isoformat()))
+        try:
+            my_datetime = datetime.datetime.fromtimestamp(timestamp)
+            label.SetLabel('%.3f (sec) %s'%(timestamp, my_datetime.isoformat()))
+        except ValueError,err:
+            label.SetLabel('%.3f (sec)'%(timestamp,))
 
     def OnQuit(self, event):
         self.frame.Close(True)
