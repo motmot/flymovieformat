@@ -5,7 +5,6 @@ kws = {}
 if not int(os.getenv( 'DISABLE_INSTALL_REQUIRES','0' )):
     kws['install_requires'] = [
         'numpy>=1.0.4',
-        'wxPython>=2.8',
         'motmot.imops>=0.5.2.dev'
         ]
 
