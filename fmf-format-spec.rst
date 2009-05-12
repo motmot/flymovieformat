@@ -38,7 +38,7 @@ II   	 framesize Number of rows and columns in each frame
 Q    	 chunksize Bytes per "chunk" (timestamp + frame)
 Q    	 n_frames  Number of frames (0=unknown, read file to find out)
 I        lenformat Length of the subsequent format string
-*B       format    string containing format, e.g. 'MONO8' or 'YUV422'
+\*B      format    string containing format, e.g. 'MONO8' or 'YUV422'
 I        bpp       Bits per pixel, e.g. 8
 ======== ========= ===================================================
 
@@ -46,8 +46,10 @@ I        bpp       Bits per pixel, e.g. 8
 -----------------
 
 ======== ========= ===================================================
+Typecode Name      Description
+======== ========= ===================================================
 d        timestamp Timestamp (seconds in current epoch)
-*B       frame     Image data, rows*columns bytes, row major ordering
+\*B      frame     Image data, rows*columns bytes, row major ordering
 ======== ========= ===================================================
 
 
@@ -63,4 +65,5 @@ B    	 uint8       1	   unsigned char
 I    	 uint32      4	   unsigned int
 Q    	 uint64      8	   unsigned long long (__int64 on Windows)
 d    	 double64    8	   double
+\*B      data              an unsigned char buffer of arbitrary length
 ======== =========== ===== =======================================
