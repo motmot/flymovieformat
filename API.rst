@@ -9,18 +9,16 @@
   single: motmot.FlyMovieFormat
   single: FlyMovieFormat
 
-
-More information
-================
-
 .. toctree::
   :maxdepth: 1
 
   fmf-format-spec.rst
 
+
 :mod:`motmot.FlyMovieFormat.FlyMovieFormat`
--------------------------------------------
+===========================================
 
 .. automodule:: motmot.FlyMovieFormat.FlyMovieFormat
    :members:
    :show-inheritance:
+
