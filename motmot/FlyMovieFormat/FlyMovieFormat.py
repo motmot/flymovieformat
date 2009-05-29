@@ -1,4 +1,73 @@
-#FlyMovieFormat
+# -*- coding: utf-8 -*-
+"""
+This module contains code to read, write and view FlyMovieFormat
+files, which end with extension .fmf.
+
+The primary design goals of FlyMovieFormat were:
+
+* Single pass, low CPU overhead writing of lossless movies for
+  realtime streaming applications
+* Precise timestamping for correlation with other activities
+* Simple format that can be read from Python, C, and MATLAB®.
+
+These goals are acheived via using a very simple format. After an
+initial header containing meta-data such as image size and color
+coding scheme (e.g. monochromatic 8 bits per pixel, YUV422, etc.),
+repeated chunks of raw image data and timestamp are saved. Because the
+raw image data from the native camera driver is saved, no additional
+processing is performed. Thus, streaming of movies from camera to disk
+will keep the CPU free for other tasks, but it will require a lot of
+disk space. Furthermore, the disk bandwidth required is equivalent to
+the camera bandwidth (unless you save only a region of the images, or
+if you only save a fraction of the incoming frames).
+
+Users may like to use these classes:
+
+ - :class:`~motmot.FlyMovieFormat.FlyMovieFormat.FlyMovie` : read .fmf files
+ - :class:`~motmot.FlyMovieFormat.FlyMovieFormat.FlyMovieSaver` : write .fmf files
+
+The following Exception types may sometimes be raised:
+
+ - :class:`~motmot.FlyMovieFormat.FlyMovieFormat.NoMoreFramesException` :
+ - :class:`~motmot.FlyMovieFormat.FlyMovieFormat.InvalidMovieFileException` :
+
+Reading an .fmf from Python
+===========================
+
+In Python accessing frames from an .fmf files is as easy as::
+
+  import motmot.FlyMovieFormat.FlyMovieFormat as FMF
+  import sys
+
+  fname = sys.argv[1]
+  fmf = FMF.FlyMovie(fname)
+  for frame_number in range(10):
+      frame,timestamp = fmf.get_frame(frame_number)
+
+Writing an .fmf in Python
+=========================
+
+Writing frames to an .fmf file is also easy::
+
+  import motmot.FlyMovieFormat.FlyMovieFormat as FMF
+  import sys
+  import numpy as np
+
+  fname = sys.argv[1]
+  fmf_saver = FMF.FlyMovieSaver(fname)
+
+  width, height = 640,480
+  for i in range(10):
+      fake_image = np.zeros( (height,width), dtype=np.uint8)
+      fake_timestamp = 0.0
+      fmf_saver.add_frame(fake_image,fake_timestamp)
+
+  fmf_saver.close()
+
+Module documentation
+====================
+
+"""
 from __future__ import division
 import sys
 import struct
@@ -49,14 +118,25 @@ def format2bpp_func(format):
     return result
 
 class NoMoreFramesException( Exception ):
+    """A frame was requested, but no more frames exist"""
     pass
 
 class InvalidMovieFileException( Exception ):
+    """The file is not a valid movie file"""
     pass
 
 class FlyMovie:
+    """.fmf file reader
 
+    - *file* : string or file object to open
+
+    Optional keyword arguments:
+
+    - *check_integrity* :  whether to scan the last frame(s) for completeness
+
+    """
     def __init__(self,file,check_integrity=False):
+
         if isinstance(file,basestring):
             self.filename = file
             try:
@@ -138,24 +218,43 @@ class FlyMovie:
         self.next_frame = None
 
     def get_width(self):
-        """returns width of data
+        """returns width of data, in bytes
 
-        to get width of underlying image:
+        Returns:
+        - *width* : integer, width of image, in bytes
+
+        Note, to get the width of underlying image, do this::
 
           image_width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
+
         """
         return self.framesize[1]
 
     def get_height(self):
+        """returns height of data, in pixels
+
+        Returns:
+        - *height* : integer, height of image, in pixels
+        """
         return self.framesize[0]
 
     def get_n_frames(self):
+        """get the number of frames
+
+        Returns:
+        - *n_frames* : integer, number of frames
+        """
         return self.n_frames
 
     def get_format(self):
         return self.format
 
     def get_bits_per_pixel(self):
+        """get the number of bits per pixel
+
+        Returns:
+        - *bits_per_pixel* : integer, number of bits per pixel (e.g. 8)
+        """
         return self.bits_per_pixel
 
     def _read_next_frame(self,allow_partial_frames=False):
@@ -205,6 +304,13 @@ class FlyMovie:
         return True
 
     def get_next_frame(self,allow_partial_frames=False):
+        """return image data for frame number
+
+        Returns:
+
+        - *frame* : array of image data
+        - *timestamp* : float, timestamp of image time
+        """
         if self.next_frame is not None:
             frame, timestamp = self.next_frame
             self.next_frame = None
@@ -219,6 +325,11 @@ class FlyMovie:
         return self.get_next_frame(allow_partial_frames=allow_partial_frames)
 
     def get_all_timestamps(self):
+        """return all timestamps in .fmf file
+
+        Returns:
+        - *all_timestamps* : array of timestamps
+        """
         if self._all_timestamps is None:
             self.seek(0)
             read_len = struct.calcsize(TIMESTAMP_FMT)
@@ -235,6 +346,7 @@ class FlyMovie:
         return self._all_timestamps
 
     def seek(self,frame_number):
+        """go to frame number"""
         if frame_number < 0:
             frame_number = self.n_frames + frame_number
         if frame_number < 0:
@@ -290,6 +402,18 @@ def mmap_flymovie( *args, **kwargs ):
     return ra
 
 class FlyMovieSaver:
+    """.fmf file writer
+
+    - *file* : string or file object to open
+
+    Keyword arguments:
+
+    - *version* : 1 or 3, defaults to 1
+    - *seek_ok* : boolean indicating whether calling seek() is OK on this file
+    - *format* : format string (e.g. 'MONO8', required for version 3 only)
+    - *bits_per_pixel* : number of bits per pixel. inferred from format if not supplied.
+
+    """
     def __init__(self,
                  file,
                  version=1,
@@ -297,27 +421,6 @@ class FlyMovieSaver:
                  format=None,
                  bits_per_pixel=None,
                  ):
-        """create a FlyMovieSaver instance
-
-        arguments:
-
-          filename
-          version    -- 1, 2, or 3
-          seek_ok    -- is seek OK on this filename?
-
-          For version 2:
-          --------------
-          compressor -- None or 'lzo' (only used if version == 2)
-          comp_level -- compression level (only used if compressed)
-
-          For version 3:
-          --------------
-          format     -- string representing format (e.g. 'MONO8' or 'YUV422')
-          bits_per_pixel -- number of bytes per pixel (MONO8 = 8, YUV422 = 16)
-
-
-        """
-
         if isinstance(file,basestring):
             # filename
             self.filename=file
@@ -460,6 +563,7 @@ class FlyMovieSaver:
         ####### end of header ###########################
 
     def close(self):
+        """finish writing the file"""
         if not hasattr(self,'file'):
             # hmm, we've already been closed
             #warnings.warn("attempting to close multiple times")
