@@ -294,10 +294,6 @@ class FlyMovieSaver:
                  file,
                  version=1,
                  seek_ok=True,
-
-                 compressor=None,
-                 comp_level=1,
-
                  format=None,
                  bits_per_pixel=None,
                  ):
@@ -341,34 +337,7 @@ class FlyMovieSaver:
             self.opened_file = False
             self.filename=None
 
-        if version == 1:
-            self.add_frame = self._add_frame_v1
-            self.add_frames = self._add_frames_v1
-        elif version == 2:
-            self.add_frame = self._add_frame_v2
-            self.add_frames = self._add_frames_v2
-        elif version == 3:
-            self.add_frame = self._add_frame_v1
-            self.add_frames = self._add_frames_v1
-        else:
-            raise ValueError('only versions 1, 2, and 3 exist')
-
         self.file.write(struct.pack(VERSION_FMT,version))
-
-        if version == 2:
-            self.compressor = compressor
-            if self.compressor is None:
-                self.compressor = 'non'
-
-            if self.compressor == 'non':
-    	        self.compress_func = lambda x: x
-    	    elif self.compressor == 'lzo':
-    	        import lzo
-    	        self.compress_func = lzo.compress
-    	    else:
-    	        raise ValueError("unknown compressor '%s'"%(self.compressor,))
-    	    assert type(self.compressor) == str and len(self.compressor)<=4
-    	    self.file.write(self.compressor)
 
         if version == 3:
             if not isinstance(format,str):
@@ -394,7 +363,17 @@ class FlyMovieSaver:
         self.n_frames = 0
         self.n_frame_pos = None
 
-    def _add_frame_v1(self,origframe,timestamp=nan,error_if_not_fast=False):
+    def add_frame(self,origframe,timestamp=nan,error_if_not_fast=False):
+        """save a single image frame to the file
+
+        - *origframe* : array of image data
+
+        Optional keyword arguments:
+
+        - *timestamp* : double precision floating point timestamp (default: nan)
+        - *error_if_not_fast* : boolean: raise error if no origframe.dump_to_file()
+
+        """
         TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
         frame = numpy.asarray(origframe)
         if self.framesize is None:
@@ -420,10 +399,19 @@ class FlyMovieSaver:
             self.file.write(b2)
         self.n_frames += 1
 
-    def _add_frames_v1(self, frames, timestamps=None):
+    def add_frames(self, frames, timestamps=None):
+        """add multiple image frames
+
+        - *frames* : arrays of image data
+
+        Optional keyword arguments:
+
+        - *timestamps* : double precision floating point timestamps
+
+        """
         if 0:
             for frame, timestamp in zip(frames,timestamps):
-                self._add_frame_v1(frame,timestamp)
+                self.add_frame(frame,timestamp)
         else:
             if timestamps is None:
                 timestamps = [nan]*len(frames)
@@ -470,52 +458,6 @@ class FlyMovieSaver:
         self.file.write(buf)
 
         ####### end of header ###########################
-
-    def _add_frames_v2(self, frames, timestamps=None):
-        if self.framesize is None:
-            # header stuff dependent on first frame
-
-            frame = frames[0]
-            assert len(frame.shape) == 2 # must be MxN array
-            self.framesize = frame.shape
-
-            buf = struct.pack(FRAMESIZE_FMT,frame.shape[0],frame.shape[1])
-            self.file.write(buf)
-
-            self.n_frame_pos = self.file.tell() # may fill value later
-            buf = struct.pack(N_FRAME_FMT,self.n_frames)
-            self.file.write(buf)
-
-            ####### end of header ###########################
-
-        # begin chunk
-        chunk_n_frames = len(frames)
-        if timestamps is None:
-            timestamps = [nan]*chunk_n_frames
-        else:
-            assert len(timestamps) == chunk_n_frames
-
-        buf = struct.pack(CHUNK_N_FRAME_FMT,chunk_n_frames)
-        self.file.write(buf)
-
-        for timestamp in timestamps:
-            self.file.write(struct.pack(CHUNK_TIMESTAMP_FMT,timestamp))
-
-        # generate mega string
-        bufs = [ frame.tostring() for frame in frames ]
-        buf = ''.join(bufs)
-        del bufs
-        compressed_data = self.compress_func(buf)
-
-        chunk_datasize = len( compressed_data)
-        self.file.write(struct.pack(CHUNK_DATASIZE_FMT,chunk_datasize))
-
-        self.file.write(compressed_data)
-
-        self.n_frames += chunk_n_frames
-
-    def _add_frame_v2(self,frame,timestamp=nan):
-        self._add_frames_v2([frame],[timestamp])
 
     def close(self):
         if not hasattr(self,'file'):
