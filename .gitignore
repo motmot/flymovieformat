@@ -2,3 +2,7 @@
 build
 dist
 *~
+.installed.cfg
+bin
+develop-eggs
+eggs
