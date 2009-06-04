@@ -374,6 +374,11 @@ class FlyMovie:
         return self.get_frame(fno)
 
 def mmap_flymovie( *args, **kwargs ):
+    """map .fmf file to RAM
+
+    Note: to map a 4 GB or larger file to RAM, a 64 bit computer is
+    required.
+    """
     supported_formats = ['MONO8','RAW8']
     fmf = FlyMovie(*args,**kwargs)
 
