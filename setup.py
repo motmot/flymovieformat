@@ -42,9 +42,9 @@ This is a subpackage of the motmot family of digital image utilities.
                     'fmf_plottimestamps = motmot.FlyMovieFormat.fmf_plottimestamps:main',
                     'fmf_tail = motmot.FlyMovieFormat.fmf_tail:main',
                     ],
-    'motmot.FlyMovieFormat.exporter_plugins':['txt = motmot.FlyMovieFormat.playfmf:TxtFileSaverPlugin',
-                                              'fmf = motmot.FlyMovieFormat.playfmf:FmfFileSaverPlugin',
-                                              'image_sequence = motmot.FlyMovieFormat.playfmf:ImageSequenceSaverPlugin',
+    'motmot.FlyMovieFormat.exporter_plugins':['txt = motmot.FlyMovieFormat.saver_plugins:TxtFileSaverPlugin',
+                                              'fmf = motmot.FlyMovieFormat.saver_plugins:FmfFileSaverPlugin',
+                                              'image_sequence = motmot.FlyMovieFormat.saver_plugins:ImageSequenceSaverPlugin',
                                        ],
     },
       **kws)
