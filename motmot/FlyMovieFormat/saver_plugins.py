@@ -41,13 +41,11 @@ class ImageSequenceSaverPlugin(object):
                     save_frame = save_frame.astype( numpy.uint8 )
                     height,width = save_frame.shape
                     im=Image.fromstring('L',(width,height),save_frame.tostring())
-                elif self.format in ['RGB8','ARGB8','YUV411','YUV422']:
+                else:
                     rgb8 = imops.to_rgb8(self.format,save_frame)
                     height,width,depth = rgb8.shape
                     im=Image.fromstring('RGB', (width,height),
                                         rgb8.tostring())
-                else:
-                    raise NotImplementedError("don't know how to save format '%s'"%self.format)
                 im.save(fname)
             def close(self):
                 return
