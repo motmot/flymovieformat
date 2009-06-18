@@ -99,6 +99,9 @@ class ImageSequenceSaverPlugin(object):
 
         if wx_parent is not None:
             import wx
+            import wx.xrc as xrc
+            RES = xrc.EmptyXmlResource()
+            RES.LoadFromString(open(RESFILE).read())
             dlg2 = RES.LoadDialog(wx_parent,"EXPORT_IMAGE_SEQUENCE")
             dlg2.filename = None
     #        dlg2._close_parent=False
