@@ -95,6 +95,7 @@ class PlotPanel(wx.Panel):
                             extent=extent,
                             cmap=cm.pink,
                             )
+        self.cbar = self.fig.colorbar(self.im)
         self.im.set_clim(0,255)
         a.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
         a.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useOffset=False))
