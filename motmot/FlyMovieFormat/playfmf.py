@@ -21,16 +21,31 @@ import numpy
 import matplotlib
 matplotlib.use('WXAgg')
 
+import matplotlib as mpl
 import matplotlib.cm as cm
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.figure import Figure
+import matplotlib.colors as mcolors
 import matplotlib.ticker
 
 RES = xrc.EmptyXmlResource()
 RES.LoadFromString(open(RESFILE).read())
 
 bpp = FlyMovieFormat.format2bpp_func
+
+_thresh = [(0.0,       0.0, 0.0),
+          (1.0/255.0, 1.0, 1.0),
+          (1.0, 1.0, 1.0)]
+_cm_threshold_binary_data = {
+    'red': _thresh,
+    'green': _thresh,
+    'blue': _thresh,
+    }
+LUTSIZE = mpl.rcParams['image.lut']
+threshold_cmap = mcolors.LinearSegmentedColormap('threshold',
+                                                 _cm_threshold_binary_data,
+                                                 LUTSIZE)
 
 class PlotPanel(wx.Panel):
 
@@ -149,7 +164,7 @@ class MyApp(wx.App):
 
         colormap_menu = wx.Menu()
         self.cmap_ids={}
-        for cmap in 'gray','jet','pink':
+        for cmap in 'gray','jet','pink','binary threshold':
             id = wx.NewId()
             colormap_menu.Append(id, cmap)
             wx.EVT_MENU(self.frame, id, self.OnColormapMenu)
@@ -232,8 +247,11 @@ class MyApp(wx.App):
         slider.SetRange( self.frame_offset+0, max(1,self.frame_offset+self.n_frames-1 ))
         slider.SetValue( self.frame_offset+frame_number )
     def OnColormapMenu(self, event):
-        cmap_name = self.cmap_ids[event.GetId()]
-        cmap = getattr(cm,cmap_name)
+        cmap_name = self.cmap_ids[event.GetId()] # e.g. 'pink', 'jet', etc.
+        if cmap_name == 'binary threshold':
+            cmap = threshold_cmap
+        else:
+            cmap = getattr(cm,cmap_name)
         self.plotpanel.im.set_cmap(cmap)
         # update display
         self.OnScroll(None)
