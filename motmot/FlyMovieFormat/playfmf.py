@@ -93,7 +93,8 @@ class PlotPanel(wx.Panel):
             frame = imops.to_rgb8(self.format,frame)
         elif self.format in ['MONO8','MONO16']:
             frame = imops.to_mono8(self.format,frame)
-        elif self.format.startswith('MONO8:'):
+        elif (self.format.startswith('MONO8:') or
+              self.format.startswith('MONO32f:')):
             # bayer
             frame = imops.to_rgb8(self.format,frame)
         #frame = self.convert_to_matplotlib(frame)

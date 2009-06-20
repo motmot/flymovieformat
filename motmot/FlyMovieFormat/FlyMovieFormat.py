@@ -95,6 +95,8 @@ def format2bpp_func(format):
     if result is None:
         if format.startswith('MONO8:'):
             result=8
+        elif format.startswith('MONO32f:'):
+            result=32
         else:
             raise ValueError('unknown format: %s'%format)
     return result
@@ -261,7 +263,8 @@ class FlyMovie:
         elif self.format in ('YUV422'):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
-        elif self.format in ('MONO32f','RAW32f'):
+        elif (self.format in ('MONO32f','RAW32f') or
+              self.format.startswith('MONO32f:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
             frame.shape = self.framesize
         else:
