@@ -263,6 +263,11 @@ class FlyMovie:
         elif self.format in ('YUV422'):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
+        elif self.format in ('RGB8'):
+            frame = numpy.fromstring(data[self.timestamp_len:],
+                                     dtype=numpy.uint8)
+            h,w = self.framesize
+            frame.shape = (h,w*3)
         elif (self.format in ('MONO32f','RAW32f') or
               self.format.startswith('MONO32f:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
