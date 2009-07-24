@@ -474,11 +474,17 @@ class FlyMovieSaver:
         """
         TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
         frame = numpy.asarray(origframe)
+        thisshape = frame.shape
+
+        if self.format=='RGB8' and frame.ndim==2:
+            # image in raw encoded shape
+            thisshape = (frame.shape[0], frame.shape[1]//3)
+
         if self.framesize is None:
             self._do_v1_header(frame)
         else:
-            if self.framesize != frame.shape:
-                raise ValueError('frame shape is now %s, but it used to be %s'%(str(frame.shape),str(self.framesize)))
+            if self.framesize != thisshape:
+                raise ValueError('frame shape is now %s, but it used to be %s'%(str(thisshape),str(self.framesize)))
 
         b1 = struct.pack(TIMESTAMP_FMT,timestamp)
         self.file.write(b1)
@@ -493,7 +499,7 @@ class FlyMovieSaver:
                 self.gave_dump_fd_warning = True
             b2 = frame.tostring()
             if len(b2) != self._bytes_per_image:
-                raise ValueError("expected buffer of length %d, got length %d (shape %s)"%(self._bytes_per_image,len(b2),str(frame.shape)))
+                raise ValueError("expected buffer of length %d, got length %d (shape %s)"%(self._bytes_per_image,len(b2),str(thisshape)))
             self.file.write(b2)
         self.n_frames += 1
 
@@ -533,15 +539,19 @@ class FlyMovieSaver:
 
         # frame data are always type uint8, so frame shape (width) varies if data format not MONO8
         self.framesize = frame.shape
+        if self.format=='RGB8' and frame.ndim==2:
+            # image in raw encoded shape
+            self.framesize = (frame.shape[0], frame.shape[1]//3)
 
-        buf = struct.pack(FRAMESIZE_FMT,frame.shape[0],frame.shape[1])
+        buf = struct.pack(FRAMESIZE_FMT,
+                          self.framesize[0],self.framesize[1])
         self.file.write(buf)
 
         if self.format in ('YUV422',):
             # We save YUV422 as 2x wide arrays of bytes
-            bits_per_image = frame.shape[0] * frame.shape[1] * 8
+            bits_per_image = self.framesize[0] * self.framesize[1] * 8
         else:
-            bits_per_image = frame.shape[0] * frame.shape[1] * self.bits_per_pixel
+            bits_per_image = self.framesize[0] * self.framesize[1] * self.bits_per_pixel
         if bits_per_image % 8 != 0:
             raise ValueError('combination of frame size and bits_per_pixel make non-byte aligned image')
         self._bytes_per_image = bits_per_image / 8
