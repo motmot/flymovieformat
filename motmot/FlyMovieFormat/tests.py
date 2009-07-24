@@ -4,11 +4,13 @@ import pkg_resources # requires setuptools
 import numpy
 import tempfile, os, shutil
 
-fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in ['test_mono8.fmf',
-                                                                       'test_raw8.fmf',
-                                                                       'test_yuv422.fmf',
-                                                                       'test_mono32f.fmf',
-                                                                       ]]
+fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in\
+    ['test_mono8.fmf',
+     'test_raw8.fmf',
+     'test_yuv422.fmf',
+     'test_mono32f.fmf',
+     'test_rgb8.fmf',
+     ]]
 
 class TestFMF(unittest.TestCase):
 
@@ -72,6 +74,8 @@ class TestFMF(unittest.TestCase):
 
     def test_mmap(self):
         for filename in fmf_filenames:
+            if filename.endswith('test_rgb8.fmf'):
+                continue
             fmf = FlyMovieFormat.FlyMovie( filename )
             ra = FlyMovieFormat.mmap_flymovie( filename )
             n_frames = len(ra)
@@ -107,7 +111,7 @@ class TestExporterPlugins(unittest.TestCase):
         for filename in fmf_filenames:
             fmf = FlyMovieFormat.FlyMovie( filename )
             format = fmf.get_format()
-            width_height = (fmf.get_width()//(bpp[format]//8),
+            width_height = (fmf.get_width(),
                              fmf.get_height())
             for plugin in self.plugins:
                 dlg = None
@@ -117,14 +121,9 @@ class TestExporterPlugins(unittest.TestCase):
                 try:
                     saver = plugin.get_saver(dlg,format,width_height)
 
-                    ymin = 0
-                    crop_xmin = 0
-                    ymax = 9
-                    crop_xmax = 8
-
                     for i in range(2):
                         orig_frame,timestamp = fmf.get_frame(i)
-                        save_frame = orig_frame[0:10,0:8]
+                        save_frame = orig_frame
                         saver.save( save_frame, timestamp )
                     saver.close()
                 finally:
