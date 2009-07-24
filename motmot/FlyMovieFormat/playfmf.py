@@ -296,7 +296,7 @@ class MyApp(wx.App):
         self.frame.SetTitle('playfmf: %s'%(self.fly_movie.filename,))
 
         self.format = self.fly_movie.get_format()
-        self.width_height = (self.fly_movie.get_width()//(bpp(self.format)//8),
+        self.width_height = (self.fly_movie.get_width(),
                              self.fly_movie.get_height())
 
         self.plotpanel.init_plot_data(frame,self.format)
@@ -361,12 +361,8 @@ class MyApp(wx.App):
             saver = plugin.get_saver(dlg,self.format,self.width_height)
             dlg.Close()
 
-            if self.format in ['YUV422','YUV411']:
-                crop_xmin = xmin*bpp(self.format)//8
-                crop_xmax = (xmax+1)*bpp(self.format)//8
-            else:
-                crop_xmin = xmin
-                crop_xmax = xmax+1
+            crop_xmin = xmin*bpp(self.format)//8
+            crop_xmax = (xmax+1)*bpp(self.format)//8
 
             for i in range(start,stop+1,interval):
                 orig_frame,timestamp = self.fly_movie.get_frame(
