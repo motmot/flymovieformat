@@ -39,12 +39,12 @@ Q    	 n_frames  Number of frames (0=unknown, read file to find out)
 Typecode Name      Description
 ======== ========= ===================================================
 I    	 version   Version number (3)
-II   	 framesize Number of rows and columns in each frame
-Q    	 chunksize Bytes per "chunk" (timestamp + frame)
-Q    	 n_frames  Number of frames (0=unknown, read file to find out)
 I        lenformat Length of the subsequent format string
 \*B      format    string containing format, e.g. 'MONO8' or 'YUV422'
 I        bpp       Bits per pixel, e.g. 8
+II   	 framesize Number of rows and columns in each frame
+Q    	 chunksize Bytes per "chunk" (timestamp + frame)
+Q    	 n_frames  Number of frames (0=unknown, read file to find out)
 ======== ========= ===================================================
 
 .fmf frame chunks
