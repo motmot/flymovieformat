@@ -16,6 +16,7 @@ import motmot.imops.imops as imops
 import wx
 import wx.xrc as xrc
 import numpy
+import numpy as np
 
 # force use of numpy by matplotlib(FlyMovieFormat uses numpy)
 import matplotlib
@@ -361,13 +362,18 @@ class MyApp(wx.App):
             saver = plugin.get_saver(dlg,self.format,self.width_height)
             dlg.Close()
 
-            crop_xmin = xmin*bpp(self.format)//8
-            crop_xmax = (xmax+1)*bpp(self.format)//8
-
             for i in range(start,stop+1,interval):
                 orig_frame,timestamp = self.fly_movie.get_frame(
                     i,
                     allow_partial_frames=self.allow_partial_frames)
+                if orig_frame.dtype == np.uint8:
+                    # usual case: frame encoded as uint8
+                    crop_xmin = xmin*bpp(self.format)//8
+                    crop_xmax = (xmax+1)*bpp(self.format)//8
+                else:
+                    # sometimes (e.g. YUV422) frame has alternate dtype
+                    crop_xmin = xmin
+                    crop_xmax = (xmax+1)
                 save_frame = orig_frame[ymin:ymax+1,crop_xmin:crop_xmax]
                 if flipLR:
                     save_frame = save_frame[:,::-1]

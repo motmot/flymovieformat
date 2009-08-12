@@ -261,7 +261,7 @@ class FlyMovie:
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
         elif self.format in ('YUV422'):
-            frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
+            frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint16)
             frame.shape = self.framesize
         elif self.format in ('RGB8'):
             frame = numpy.fromstring(data[self.timestamp_len:],
@@ -376,10 +376,8 @@ def mmap_flymovie( *args, **kwargs ):
 
     if fmf.bits_per_pixel == 8 and format in ['MONO8','RAW8']:
         dtype_str = '|u1'
-    elif fmf.bits_per_pixel == 16 and format in ['MONO16','RAW16']:
+    elif fmf.bits_per_pixel == 16 and format in ['MONO16','RAW16','YUV422']:
         dtype_str = '<u2'
-    elif fmf.bits_per_pixel == 16 and format in ['YUV422']:
-        dtype_str = '|u1'
     elif fmf.bits_per_pixel == 32 and format in ['MONO32f','RAW32f']:
         dtype_str = '<f4'
     else:
@@ -547,11 +545,7 @@ class FlyMovieSaver:
                           self.framesize[0],self.framesize[1])
         self.file.write(buf)
 
-        if self.format in ('YUV422',):
-            # We save YUV422 as 2x wide arrays of bytes
-            bits_per_image = self.framesize[0] * self.framesize[1] * 8
-        else:
-            bits_per_image = self.framesize[0] * self.framesize[1] * self.bits_per_pixel
+        bits_per_image = self.framesize[0] * self.framesize[1] * self.bits_per_pixel
         if bits_per_image % 8 != 0:
             raise ValueError('combination of frame size and bits_per_pixel make non-byte aligned image')
         self._bytes_per_image = bits_per_image / 8
