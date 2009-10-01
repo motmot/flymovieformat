@@ -102,7 +102,8 @@ class PlotPanel(wx.Panel):
         return frame
 
     def init_plot_data(self,frame,format):
-        a = self.fig.add_subplot(111)
+        self.axes = self.fig.add_subplot(111)
+        a = self.axes # shorthand
         self.format = format
         frame = self._convert_to_displayable(frame)
         extent = 0, frame.shape[1]-1, frame.shape[0]-1, 0
@@ -265,7 +266,9 @@ class MyApp(wx.App):
             self.allow_partial_frames=True
         else:
             self.allow_partial_frames=False
-        a = self.plotpanel.fig.add_subplot(111) # not really new, just gets axes
+        self.axes = self.plotpanel.fig.add_subplot(111) # not really new, just gets axes
+        a = self.axes
+        a.set_title('%s (%s)'%(flymovie.filename,flymovie.get_format()))
 
         self.fly_movie = flymovie
         self.n_frames = self.fly_movie.get_n_frames()
