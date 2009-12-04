@@ -16,12 +16,15 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     parser = OptionParser(usage)
     parser.add_option('--start',type='int',default=0,help='first frame to save')
     parser.add_option('--stop',type='int',default=-1,help='last frame to save')
+    parser.add_option('--interval',type='int',default=1,help='save every Nth frame')
     parser.add_option('--extension',type='string',default='bmp',
                       help='image extension (default: bmp)')
     parser.add_option('--outdir',type='string',default=None,
                       help='directory to save images (default: same as fmf)')
     parser.add_option('--progress',action='store_true',default=False,
                       help='show progress bar')
+    parser.add_option('--prefix',default=None,type='str',
+                      help='prefix for image filenames')
     (options, args) = parser.parse_args()
 
     if len(args)<1:
@@ -31,13 +34,18 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     filename = args[0]
     startframe = options.start
     endframe = options.stop
+    interval = options.interval
     imgformat = options.extension
 
     base,ext = os.path.splitext(filename)
     if ext != '.fmf':
         print 'fmf_filename does not end in .fmf'
         sys.exit()
+
     path,base = os.path.split(base)
+    if options.prefix is not None:
+        base = options.prefix
+
     if options.outdir is None:
         outdir = path
     else:
@@ -50,7 +58,8 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
         endframe = n_frames - 1
 
     fly_movie.seek(startframe)
-    n_frames = endframe+1-startframe
+    frames = range(startframe,endframe+1,interval)
+    n_frames = len(frames)
     if options.progress:
         import progressbar
         widgets=['fmf2bmps', progressbar.Percentage(), ' ',
@@ -60,7 +69,7 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     else:
         pbar = None
 
-    for count,i in enumerate(range(startframe,endframe+1)):
+    for count,i in enumerate(frames):
         if pbar is not None:
             pbar.update(count)
         frame,timestamp = fly_movie.get_next_frame()
