@@ -11,6 +11,8 @@ def doit(input_fname,
          single_channel=False,
          start=None,
          stop=None,
+         gain=1.0,
+         offset=0.0,
          ):
     output_fname = os.path.splitext(input_fname)[0]+'.highcontrast.fmf'
     in_fmf = FMF.FlyMovie(input_fname)
@@ -66,8 +68,8 @@ def doit(input_fname,
             orig_center[channel_name] = (minv+maxv)/2.0
             orig_range[channel_name] = maxv-minv
 
-        new_center = 127.5
-        new_range = 127.5
+        new_center = 127.5+offset
+        new_range = 127.5*gain
 
         # pass 2 - rescale and save
         in_fmf.seek(0)
@@ -115,11 +117,19 @@ def main():
     parser.add_option("--stop", type='int',
                       help="last frame")
 
+    parser.add_option("--gain", type='float',
+                      default=1.0)
+
+    parser.add_option("--offset", type='float',
+                      default=1.0)
+
     (options, args) = parser.parse_args()
     filename = args[0]
     doit(filename,
          start = options.start,
          stop = options.stop,
+         gain = options.gain,
+         offset = options.offset,
          single_channel=options.single_channel,
          )
 
