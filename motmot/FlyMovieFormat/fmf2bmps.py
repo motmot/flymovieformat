@@ -35,6 +35,7 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     startframe = options.start
     endframe = options.stop
     interval = options.interval
+    assert interval >= 1
     imgformat = options.extension
 
     base,ext = os.path.splitext(filename)
@@ -69,10 +70,10 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     else:
         pbar = None
 
-    for count,i in enumerate(frames):
+    for count,frame_number in enumerate(frames):
         if pbar is not None:
             pbar.update(count)
-        frame,timestamp = fly_movie.get_next_frame()
+        frame,timestamp = fly_movie.get_frame(frame_number)
 
         mono=False
         if (fmf_format in ['RGB8','ARGB8','YUV411','YUV422'] or
@@ -90,7 +91,7 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
             im = Image.fromstring('L',(w,h),save_frame.tostring())
         else:
             im = Image.fromstring('RGB',(w,h),save_frame.tostring())
-        f='%s_%08d.%s'%(os.path.join(outdir,base),i,imgformat)
+        f='%s_%08d.%s'%(os.path.join(outdir,base),frame_number,imgformat)
         im.save(f)
     if pbar is not None:
         pbar.finish()
