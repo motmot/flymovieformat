@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, time, os, gc, datetime
+import sys, time, os, gc, datetime, warnings
 from optparse import OptionParser
 
 import pkg_resources # from setuptools
@@ -90,7 +90,7 @@ class PlotPanel(wx.Panel):
 ##            print "%.2f, %.2f"%(mouse_event.xdata, mouse_event.ydata)
 
     def _convert_to_displayable(self,frame):
-        if self.format in ['RGB8','ARGB8','YUV411','YUV422']:
+        if self.format in ['RGB8','ARGB8','YUV411','YUV422','RGB32f']:
             frame = imops.to_rgb8(self.format,frame)
         elif self.format in ['MONO8','MONO16']:
             frame = imops.to_mono8(self.format,frame)
@@ -98,6 +98,9 @@ class PlotPanel(wx.Panel):
               self.format.startswith('MONO32f:')):
             # bayer
             frame = imops.to_rgb8(self.format,frame)
+        else:
+            warnings.warn('unknown format "%s" conversion to displayable'%
+                          self.format)
         #frame = self.convert_to_matplotlib(frame)
         return frame
 
