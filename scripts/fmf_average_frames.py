@@ -11,8 +11,6 @@ def doit(input_fname,
          single_channel=False,
          start=None,
          stop=None,
-         gain=1.0,
-         offset=0.0,
          ):
     output_fname = os.path.splitext(input_fname)[0]+'.av.fmf'
     in_fmf = FMF.FlyMovie(input_fname)
