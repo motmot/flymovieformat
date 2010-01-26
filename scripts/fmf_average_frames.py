@@ -62,7 +62,7 @@ def doit(input_fname,
                 frame = np.atleast_3d(frame)
             cumsum += frame
 
-        frame = cumsum/n_samples/255.0
+        frame = cumsum/n_samples
 
         if output_format == 'MONO32f':
             # drop dimension
