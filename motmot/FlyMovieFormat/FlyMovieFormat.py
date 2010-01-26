@@ -88,6 +88,7 @@ format2bpp = { # convert format to bits per pixel
     'ARGB8':32,
     'YUV411':12,
     'YUV422':16,
+    'RGB32f':32*3,
     }
 
 def format2bpp_func(format):
@@ -272,6 +273,9 @@ class FlyMovie:
               self.format.startswith('MONO32f:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
             frame.shape = self.framesize
+        elif (self.format=='RGB32f'):
+            frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
+            frame.shape = self.framesize[0], self.framesize[1], 3
         else:
             raise NotImplementedError("Reading not implemented for %s format"%(self.format,))
         return frame, timestamp
@@ -365,6 +369,8 @@ class FlyMovie:
 
 def mmap_flymovie( *args, **kwargs ):
     """map .fmf file to RAM
+
+    Note: make mmap does not currently work with RGB images.
 
     Note: to map a 4 GB or larger file to RAM, a 64 bit computer is
     required.

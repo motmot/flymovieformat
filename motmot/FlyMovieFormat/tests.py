@@ -10,6 +10,7 @@ fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in\
      'test_yuv422.fmf',
      'test_mono32f.fmf',
      'test_rgb8.fmf',
+     'test_rgb32f.fmf',
      ]]
 
 class TestFMF(unittest.TestCase):
@@ -74,7 +75,8 @@ class TestFMF(unittest.TestCase):
 
     def test_mmap(self):
         for filename in fmf_filenames:
-            if filename.endswith('test_rgb8.fmf'):
+            if (filename.endswith('test_rgb8.fmf') or
+                filename.endswith('test_rgb32f.fmf')):
                 continue
             fmf = FlyMovieFormat.FlyMovie( filename )
             ra = FlyMovieFormat.mmap_flymovie( filename )
