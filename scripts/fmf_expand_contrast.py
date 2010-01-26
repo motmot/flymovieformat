@@ -39,6 +39,7 @@ def doit(input_fname,
             channels = [('red',0),('green',1),('blue',2)]
         else:
             channels = [('gray',0)]
+        channel_dict = dict(channels)
         minvs = collections.defaultdict(list)
         maxvs = collections.defaultdict(list)
         if stop is None:
@@ -82,7 +83,7 @@ def doit(input_fname,
 
             if single_channel is not None:
                 # input is, by definition, color
-                frame = frame[:,:,1] # drop all but single_channel dim
+                frame = frame[:,:,channel_dict[single_channel]] # drop all but single_channel dim
                 frame = frame.astype(np.float32)
                 frame = (frame-orig_center[single_channel])/orig_range[single_channel]
                 frame = frame * new_range + new_center
