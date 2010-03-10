@@ -53,7 +53,9 @@ format. This allows an .fmf file to be converted to any format that
 ffmpeg supports. For example, to convert the file x.fmf to x.avi using
 the MPEG4 codec:
 
-%prog x.fmf | ffmpeg -vcodec msmpeg4v2 -i - x.avi"""
+%prog x.fmf > x.y4m
+ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
+"""
 
     parser = OptionParser(usage)
 
