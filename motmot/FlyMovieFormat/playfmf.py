@@ -264,6 +264,7 @@ class MyApp(wx.App):
 
     def OnNewMovie(self,flymovie,
                    corruption_fix=False,
+                   force_format=None,
                    ):
         if corruption_fix:
             self.allow_partial_frames=True
@@ -302,7 +303,10 @@ class MyApp(wx.App):
         # window title
         self.frame.SetTitle('playfmf: %s'%(self.fly_movie.filename,))
 
-        self.format = self.fly_movie.get_format()
+        if force_format is None:
+            self.format = self.fly_movie.get_format()
+        else:
+            self.format = force_format
         self.width_height = (self.fly_movie.get_width(),
                              self.fly_movie.get_height())
 
@@ -420,6 +424,8 @@ def main():
                       default=0,
                       help="add an integer offset to frame numbers")
 
+    parser.add_option("--format", type="string", help="force the movie coding")
+
     (options, args) = parser.parse_args()
 
     if len(args)<1:
@@ -437,6 +443,7 @@ def main():
     flymovie = FlyMovieFormat.FlyMovie(filename)
     app.OnNewMovie(flymovie,
                    corruption_fix=options.corruption_fix,
+                   force_format=options.format,
                    )
     app.update_frame_offset(options.frame_offset)
     app.MainLoop()
