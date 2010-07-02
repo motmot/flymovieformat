@@ -26,6 +26,7 @@ This is a subpackage of the motmot family of digital image utilities.
                                                'test_mono32f.fmf',
                                                'test_yuv422.fmf',
                                                'description.txt']},
+      scripts = ['scripts/pvn2fmf'],
       entry_points = {
     'console_scripts': ['fmf2bmps = motmot.FlyMovieFormat.fmf2bmps:main',
                         'fmf_collapse = motmot.FlyMovieFormat.fmf_collapse:main',
