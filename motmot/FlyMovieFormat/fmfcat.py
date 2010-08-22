@@ -8,6 +8,11 @@ if 1:
     # http://mail.python.org/pipermail/python-list/2004-June/268512.html
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
+# TODO: see if this blog post
+# http://derrickpetzold.com/index.php/capturing-output-from-ffmpeg-python/
+# contains informations about how to avoid the strange blocking problem that
+# happens when attempting to pipe directly to ffmpeg through stdin.
+
 def doit( filename,
           raten=25, # numerator
           rated=1,  # denom
