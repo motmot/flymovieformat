@@ -1,0 +1,14 @@
+include motmot/FlyMovieFormat/matplotlibrc
+include motmot/FlyMovieFormat/*.xrc
+include motmot/FlyMovieFormat/*.fmf
+include scripts/*.py
+include scripts/pvn2fmf
+include *.rst
+include *.txt
+include *.py
+include *.cfg
+include *.mime
+include fmf2m4v
+include *.xml
+include *.desktop
+include matlab
