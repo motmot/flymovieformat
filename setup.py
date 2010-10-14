@@ -12,7 +12,7 @@ fast, and a variety of formats (e.g. MONO8, YUV422) are supported.
 
 This is a subpackage of the motmot family of digital image utilities.
 """,
-      version='0.5.9',
+      version='0.5.9.1',
       author='Andrew Straw',
       author_email='strawman@astraw.com',
       license='BSD',
