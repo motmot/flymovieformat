@@ -2,17 +2,13 @@ from optparse import OptionParser
 import sys
 import motmot.FlyMovieFormat.FlyMovieFormat as FMF
 import numpy
+import fcntl, os
 
 if 1:
     import signal
     # Restore the default SIGPIPE handler (Python sets a handler to
     # raise an exception).
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-
-# TODO: see if this blog post
-# http://derrickpetzold.com/index.php/capturing-output-from-ffmpeg-python/
-# contains informations about how to avoid the strange blocking problem that
-# happens when attempting to pipe directly to ffmpeg through stdin.
 
 def doit( filename,
           raten=25, # numerator
@@ -34,6 +30,7 @@ def doit( filename,
     colorspace = 'Cmono'
 
     out_fd = sys.stdout
+    fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
     out_fd.write('%(Y4M_MAGIC)s W%(width)d H%(height)d F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d %(colorspace)s\n'%locals())
     while 1:
@@ -82,4 +79,3 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
 
 if __name__=='__main__':
     main()
-
