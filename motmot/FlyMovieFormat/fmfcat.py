@@ -27,8 +27,8 @@ def encode_plane( frame, color=False ):
 def doit( filename,
           raten=25, # numerator
           rated=1,  # denom
-          aspectn = 1, # numerator
-          aspectd = 1, # denom
+          aspectn = 0, # numerator
+          aspectd = 0, # denom
           rotate_180 = False,
           autocrop = False,
           color = False,
