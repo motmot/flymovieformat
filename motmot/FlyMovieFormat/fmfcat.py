@@ -16,12 +16,21 @@ def doit( filename,
           aspectn = 1, # numerator
           aspectd = 1, # denom
           rotate_180 = False,
+          autocrop = False,
           ):
     fmf = FMF.FlyMovie(filename)
     if fmf.get_format() not in ['MONO8','RAW8']:
         raise NotImplementedError('Only MONO8 and RAW8 formats are currently supported.')
     width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
     height = fmf.get_height()
+
+    if autocrop:
+        use_width  = (width >> 4) << 4
+        use_height  = (height >> 4) << 4
+        print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(width,height, use_width,use_height)
+    else:
+        use_width = width
+        use_height = height
 
     Y4M_MAGIC = 'YUV4MPEG2'
     Y4M_FRAME_MAGIC = 'FRAME'
@@ -32,7 +41,7 @@ def doit( filename,
     out_fd = sys.stdout
     fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
-    out_fd.write('%(Y4M_MAGIC)s W%(width)d H%(height)d F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d %(colorspace)s\n'%locals())
+    out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d %(colorspace)s\n'%locals())
     while 1:
         try:
             frame,timestamp = fmf.get_next_frame()
@@ -44,7 +53,10 @@ def doit( filename,
         if rotate_180:
             frame = numpy.rot90(numpy.rot90(frame))
 
-        for i in range(height):
+        if autocrop:
+            frame = frame[:,:use_width]
+
+        for i in range(use_height):
             out_fd.write(frame[i,:].tostring())
         out_fd.flush()
 
@@ -65,6 +77,9 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
     parser.add_option('--rotate-180', action='store_true',
                       default=False )
 
+    parser.add_option('--autocrop', action='store_true',
+                      default=False )
+
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -75,6 +90,7 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
 
     doit( filename = args[0],
           rotate_180 = options.rotate_180,
+          autocrop = options.autocrop,
           )
 
 if __name__=='__main__':
