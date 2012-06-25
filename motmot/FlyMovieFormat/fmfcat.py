@@ -32,6 +32,8 @@ def doit( filename,
           rotate_180 = False,
           autocrop = False,
           color = False,
+          raw = False,
+          non_blocking = False
           ):
     fmf = FMF.FlyMovie(filename)
     if fmf.get_format() not in ['MONO8','RAW8']:
@@ -47,6 +49,9 @@ def doit( filename,
     else:
         use_width = width
         use_height = height
+
+    if raw:
+        print >> sys.stderr, 'raw image width=%d height=%d' %(use_width,use_height)
 
     Y4M_MAGIC = 'YUV4MPEG2'
     Y4M_FRAME_MAGIC = 'FRAME'
@@ -64,18 +69,22 @@ def doit( filename,
         colorspace = 'C420'
 
     out_fd = sys.stdout
-    fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
-    out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d '
-                 'F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d '
-                 '%(colorspace)s Xconverted-by-fmfcat\n'%locals())
+    if non_blocking:
+        fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+
+    if not raw:
+        out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d '
+                     'F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d '
+                     '%(colorspace)s Xconverted-by-fmfcat\n'%locals())
     while 1:
         try:
             frame,timestamp = fmf.get_next_frame()
         except FMF.NoMoreFramesException, err:
             break
 
-        out_fd.write('%(Y4M_FRAME_MAGIC)s\n'%locals())
+        if not raw:
+            out_fd.write('%(Y4M_FRAME_MAGIC)s\n'%locals())
 
         if rotate_180:
             frame = numpy.rot90(numpy.rot90(frame))
@@ -99,13 +108,20 @@ def doit( filename,
 def main():
     usage = """%prog FILENAME [options]
 
-Pipe the contents of an .fmf file to stdout in the yuv4mpegpipe
+Pipe the contents of an .fmf file to stdout in raw (--raw) or the yuv4mpegpipe
 format. This allows an .fmf file to be converted to any format that
 ffmpeg supports. For example, to convert the file x.fmf to x.avi using
 the MPEG4 codec:
 
 %prog x.fmf > x.y4m
 ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
+
+the raw format can be viewed directly using gstreamer (but rememeber to set
+the video width and height)
+
+%prog x.fmf | gst-launch-0.10 \\
+ fdsrc ! videoparse format="gray8" width=1296 height=966 \\
+ ! ffmpegcolorspace ! xvimagesink
 """
 
     parser = OptionParser(usage)
@@ -119,6 +135,15 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
     parser.add_option('--color', action='store_true',
                       default=False )
 
+    parser.add_option('--raw', action='store_true',
+                      default=False,
+                      help='do not include any YUV4MPEG2 headers, just output raw frame data' )
+
+    parser.add_option('--non-blocking', action='store_true',
+                      default=False,
+                      help='set stdout to be nonblocking (helps with ffmpeg, causes corruption with gstreamer' )
+
+
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -131,6 +156,8 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
           rotate_180 = options.rotate_180,
           autocrop = options.autocrop,
           color = options.color,
+          raw = options.raw,
+          non_blocking = options.non_blocking
           )
 
 if __name__=='__main__':
