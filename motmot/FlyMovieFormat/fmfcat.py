@@ -5,7 +5,8 @@ import numpy
 
 if 1:
     import signal
-    # http://mail.python.org/pipermail/python-list/2004-June/268512.html
+    # Restore the default SIGPIPE handler (Python sets a handler to
+    # raise an exception).
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 # TODO: see if this blog post
