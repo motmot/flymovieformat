@@ -10,6 +10,19 @@ if 1:
     # raise an exception).
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
+def encode_plane( frame, color=False ):
+    if not color:
+        buf = frame.tostring()
+    else:
+        # 420
+        # See IMC1 at http://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
+        h,w = frame.shape
+        f2 = numpy.zeros( (h*2,w), dtype=numpy.uint8)
+        f2[:h, :] = frame
+        f2[h:, :] = 128
+        buf = f2.tostring()
+    return buf
+
 def doit( filename,
           raten=25, # numerator
           rated=1,  # denom
@@ -17,6 +30,7 @@ def doit( filename,
           aspectd = 1, # denom
           rotate_180 = False,
           autocrop = False,
+          color = False,
           ):
     fmf = FMF.FlyMovie(filename)
     if fmf.get_format() not in ['MONO8','RAW8']:
@@ -37,7 +51,16 @@ def doit( filename,
     Y4M_FRAME_MAGIC = 'FRAME'
 
     inter = 'Ip' # progressive
-    colorspace = 'Cmono'
+    if not color:
+        # Warn about not being in spec? OTOH it works in VLC and
+        # Ubuntu Precise mplayer(2), but not Medibuntu Precise
+        # mplayer.
+
+        # See http://wiki.multimedia.cx/index.php?title=YUV4MPEG2
+        colorspace = 'Cmono'
+    else:
+        # This is only working in VLC
+        colorspace = 'C420'
 
     out_fd = sys.stdout
     fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
@@ -57,10 +80,10 @@ def doit( filename,
             frame = numpy.rot90(numpy.rot90(frame))
 
         if autocrop:
-            frame = frame[:,:use_width]
+            frame = frame[:use_height,:use_width]
 
-        for i in range(use_height):
-            out_fd.write(frame[i,:].tostring())
+        buf = encode_plane( frame, color=color )
+        out_fd.write(buf)
         out_fd.flush()
 
 def main():
@@ -83,6 +106,9 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
     parser.add_option('--autocrop', action='store_true',
                       default=False )
 
+    parser.add_option('--color', action='store_true',
+                      default=False )
+
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
@@ -94,6 +120,7 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
     doit( filename = args[0],
           rotate_180 = options.rotate_180,
           autocrop = options.autocrop,
+          color = options.color,
           )
 
 if __name__=='__main__':
