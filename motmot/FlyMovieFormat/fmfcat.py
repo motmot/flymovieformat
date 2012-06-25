@@ -3,6 +3,7 @@ import sys
 import motmot.FlyMovieFormat.FlyMovieFormat as FMF
 import numpy
 import fcntl, os
+import time
 
 if 1:
     import signal
@@ -83,7 +84,16 @@ def doit( filename,
             frame = frame[:use_height,:use_width]
 
         buf = encode_plane( frame, color=color )
-        out_fd.write(buf)
+        while 1:
+            try:
+                out_fd.write(buf)
+                break
+            except IOError, err:
+                if err.errno == 11:
+                    print >> sys.stderr, 'write error, waiting...'
+                    time.sleep(0.1)
+                    continue
+                raise
         out_fd.flush()
 
 def main():
