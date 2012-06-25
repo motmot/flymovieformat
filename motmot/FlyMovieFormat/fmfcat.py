@@ -27,7 +27,8 @@ def doit( filename,
     if autocrop:
         use_width  = (width >> 4) << 4
         use_height  = (height >> 4) << 4
-        print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(width,height, use_width,use_height)
+        print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(
+            width,height, use_width,use_height)
     else:
         use_width = width
         use_height = height
@@ -41,7 +42,9 @@ def doit( filename,
     out_fd = sys.stdout
     fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
-    out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d %(colorspace)s\n'%locals())
+    out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d '
+                 'F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d '
+                 '%(colorspace)s Xconverted-by-fmfcat\n'%locals())
     while 1:
         try:
             frame,timestamp = fmf.get_next_frame()
