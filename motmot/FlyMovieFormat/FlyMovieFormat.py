@@ -361,7 +361,7 @@ class FlyMovie:
     def get_frame_at_or_before_timestamp(self, timestamp):
         tss = self.get_all_timestamps()
         at_or_before_timestamp_cond = tss <= timestamp
-        nz = numpy.nonzero(at_or_before_timestamp_cond)
+        nz = numpy.nonzero(at_or_before_timestamp_cond)[0]
         if len(nz)==0:
             raise ValueError("no frames at or before timestamp given")
         fno = nz[-1]
