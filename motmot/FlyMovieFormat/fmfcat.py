@@ -36,7 +36,7 @@ def doit( filename,
           non_blocking = False
           ):
     fmf = FMF.FlyMovie(filename)
-    if fmf.get_format() not in ['MONO8','RAW8']:
+    if not raw and fmf.get_format() not in ['MONO8','RAW8']:
         raise NotImplementedError('Only MONO8 and RAW8 formats are currently supported.')
     width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
     height = fmf.get_height()
