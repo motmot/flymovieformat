@@ -4,11 +4,11 @@
 FlyMovieFormat (.fmf) file specification
 ****************************************
 
-This file type defines 8-bit grayscale image sequences where each
-image is associated with a timestamp. There are currently two versions
-implemented, versions 1 and 3. (Version 2 was briefly used internally
-and is now best forgotten.) For documentation about the purpose of the
-format and the reference Python implementation, see
+This file type defines image sequences where each image is associated
+with a timestamp. There are currently two versions implemented,
+versions 1 and 3. (Version 2 was briefly used internally and is now
+best forgotten.) For documentation about the purpose of the format and
+the reference Python implementation, see
 :mod:`motmot.FlyMovieFormat.FlyMovieFormat`.
 
 ==============
