@@ -465,15 +465,18 @@ class FlyMovieSaver:
         self.n_frames = 0
         self.n_frame_pos = None
 
-    def add_frame(self,origframe,timestamp=nan,error_if_not_fast=False):
+    def add_frame(self,origframe,timestamp=nan,error_if_not_fast=False,fast_write=True):
         """save a single image frame to the file
 
-        - *origframe* : array of image data
+        - *origframe* : array of image data.
 
         Optional keyword arguments:
 
         - *timestamp* : double precision floating point timestamp (default: nan)
-        - *error_if_not_fast* : boolean: raise error if no origframe.dump_to_file()
+        - *error_if_not_fast* : boolean: raise error if fast write was requested
+                                         but not able to be called.
+        - *fast_write* : use ndarray.tofile, array.tofile, or origframe.dump_fo_file
+                         to write the data.
 
         """
         TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
@@ -492,15 +495,14 @@ class FlyMovieSaver:
 
         b1 = struct.pack(TIMESTAMP_FMT,timestamp)
         self.file.write(b1)
-        if hasattr(origframe,'dump_to_file'):
-            nbytes = origframe.dump_to_file( self.file )
+        if fast_write and hasattr(origframe,'dump_to_file'):
+            nbytes = origframe.dump_to_file(self.file)
             assert nbytes == self._bytes_per_image
+        elif fast_write and hasattr(origframe, 'tofile'):
+            origframe.tofile(self.file)
         else:
-            if error_if_not_fast:
-                origframe.dump_to_file # trigger AttributeError
-            if not hasattr(self,'gave_dump_fd_warning'):
-                #warnings.warn('could save faster if %s implemented dump_to_file()'%(str(type(origframe)),))
-                self.gave_dump_fd_warning = True
+            if fast_write and error_if_not_fast:
+                raise AttributeError("fast write failed, no dump_to_file or tofile method")
             b2 = frame.tostring()
             if len(b2) != self._bytes_per_image:
                 raise ValueError("expected buffer of length %d, got length %d (shape %s)"%(self._bytes_per_image,len(b2),str(thisshape)))
