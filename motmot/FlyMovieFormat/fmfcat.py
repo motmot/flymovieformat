@@ -119,7 +119,7 @@ ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
 the raw format can be viewed directly using gstreamer (but rememeber to set
 the video width and height)
 
-%prog x.fmf | gst-launch-0.10 \\
+%prog x.fmf --raw | gst-launch-0.10 \\
  fdsrc ! videoparse format="gray8" width=1296 height=966 \\
  ! ffmpegcolorspace ! xvimagesink
 """
