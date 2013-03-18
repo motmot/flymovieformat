@@ -15,10 +15,11 @@ def encode_plane( frame, color=False ):
     if not color:
         buf = frame.tostring()
     else:
-        # 420
-        # See IMC1 at http://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
+        # Convert pure luminance data (mono8) into YCbCr. First plane
+        # is lumance data, next two planes are color chrominance.
         h,w = frame.shape
-        f2 = numpy.zeros( (h*2,w), dtype=numpy.uint8)
+        nh = h*3//2
+        f2 = numpy.zeros( (nh,w), dtype=numpy.uint8)
         f2[:h, :] = frame
         f2[h:, :] = 128
         buf = f2.tostring()
