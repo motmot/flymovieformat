@@ -145,6 +145,11 @@ the video width and height)
     parser.add_option('--color', default=1, type=int,
                       help='set color mode (0:mono, 1:YCbCr 420)')
 
+    parser.add_option('--raten', default=25, type=int,
+                      help='numerator of fps (frame rate)')
+    parser.add_option('--rated', default=1, type=int,
+                      help='denominator of fps (frame rate)')
+
     parser.add_option('--raw', action='store_true',
                       default=False,
                       help='do not include any YUV4MPEG2 headers, just output raw frame data' )
@@ -163,11 +168,13 @@ the video width and height)
     filename = args[0]
 
     doit( filename = args[0],
+          raten = options.raten,
+          rated = options.rated,
           rotate_180 = options.rotate_180,
           autocrop = options.autocrop,
           color = options.color,
           raw = options.raw,
-          non_blocking = options.non_blocking
+          non_blocking = options.non_blocking,
           )
 
 if __name__=='__main__':
