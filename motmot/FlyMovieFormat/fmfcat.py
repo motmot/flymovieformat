@@ -150,6 +150,11 @@ the video width and height)
     parser.add_option('--rated', default=1, type=int,
                       help='denominator of fps (frame rate)')
 
+    parser.add_option('--aspectn', default=0, type=int,
+                      help='numerator of aspect ratio')
+    parser.add_option('--aspectd', default=0, type=int,
+                      help='denominator of aspect ratio')
+
     parser.add_option('--raw', action='store_true',
                       default=False,
                       help='do not include any YUV4MPEG2 headers, just output raw frame data' )
@@ -170,6 +175,8 @@ the video width and height)
     doit( filename = args[0],
           raten = options.raten,
           rated = options.rated,
+          aspectn = options.aspectn,
+          aspectd = options.aspectd,
           rotate_180 = options.rotate_180,
           autocrop = options.autocrop,
           color = options.color,
