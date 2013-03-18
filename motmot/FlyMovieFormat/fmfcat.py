@@ -73,7 +73,7 @@ def doit( filename,
         # See http://wiki.multimedia.cx/index.php?title=YUV4MPEG2
         colorspace = 'Cmono'
     elif color==1:
-        colorspace = 'C420'
+        colorspace = 'C420paldv'
     else:
         raise ValueError('unknown color: %s'%color)
 
