@@ -11,10 +11,10 @@ if 1:
     # raise an exception).
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-def encode_plane( frame, color=False ):
-    if not color:
+def encode_plane( frame, color=1 ):
+    if color==0:
         buf = frame.tostring()
-    else:
+    elif color==1:
         # Convert pure luminance data (mono8) into YCbCr. First plane
         # is lumance data, next two planes are color chrominance.
         h,w = frame.shape
@@ -32,7 +32,7 @@ def doit( filename,
           aspectd = 0, # denom
           rotate_180 = False,
           autocrop = 1,
-          color = False,
+          color = 1,
           raw = False,
           non_blocking = False
           ):
@@ -65,16 +65,17 @@ def doit( filename,
     Y4M_FRAME_MAGIC = 'FRAME'
 
     inter = 'Ip' # progressive
-    if not color:
+    if color==0:
         # Warn about not being in spec? OTOH it works in VLC and
         # Ubuntu Precise mplayer(2), but not Medibuntu Precise
         # mplayer.
 
         # See http://wiki.multimedia.cx/index.php?title=YUV4MPEG2
         colorspace = 'Cmono'
-    else:
-        # This is only working in VLC
+    elif color==1:
         colorspace = 'C420'
+    else:
+        raise ValueError('unknown color: %s'%color)
 
     out_fd = sys.stdout
 
@@ -141,8 +142,8 @@ the video width and height)
                       help='autocrop image (0:no, 1: width%2==0, '
                                             '2=width%16==0,height%16==0) ')
 
-    parser.add_option('--color', action='store_true',
-                      default=False )
+    parser.add_option('--color', default=1, type=int,
+                      help='set color mode (0:mono, 1:YCbCr 420)')
 
     parser.add_option('--raw', action='store_true',
                       default=False,
