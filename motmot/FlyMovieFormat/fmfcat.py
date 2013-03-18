@@ -31,7 +31,7 @@ def doit( filename,
           aspectn = 0, # numerator
           aspectd = 0, # denom
           rotate_180 = False,
-          autocrop = False,
+          autocrop = 1,
           color = False,
           raw = False,
           non_blocking = False
@@ -42,14 +42,21 @@ def doit( filename,
     width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
     height = fmf.get_height()
 
-    if autocrop:
-        use_width  = (width >> 4) << 4
-        use_height  = (height >> 4) << 4
-        print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(
-            width,height, use_width,use_height)
-    else:
+    if autocrop==0:
         use_width = width
         use_height = height
+    else:
+        if autocrop==1:
+            use_width  = (width >> 1) << 1
+            use_height = height
+        elif autocrop==2:
+            use_width  = (width >> 4) << 4
+            use_height  = (height >> 4) << 4
+        else:
+            raise ValueError('Unknown autocrop value: %s'%autocrop)
+        if use_width!=width or use_height!=height:
+            print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(
+                width,height, use_width,use_height)
 
     if raw:
         print >> sys.stderr, 'raw image width=%d height=%d' %(use_width,use_height)
@@ -130,8 +137,9 @@ the video width and height)
     parser.add_option('--rotate-180', action='store_true',
                       default=False )
 
-    parser.add_option('--autocrop', action='store_true',
-                      default=False )
+    parser.add_option('--autocrop', default=1, type=int,
+                      help='autocrop image (0:no, 1: width%2==0, '
+                                            '2=width%16==0,height%16==0) ')
 
     parser.add_option('--color', action='store_true',
                       default=False )
