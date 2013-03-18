@@ -8,7 +8,5 @@ include *.txt
 include *.py
 include *.cfg
 include *.mime
-include fmf2m4v
 include *.xml
 include *.desktop
-include matlab
