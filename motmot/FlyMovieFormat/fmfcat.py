@@ -117,13 +117,12 @@ def doit( filename,
 def main():
     usage = """%prog FILENAME [options]
 
-Pipe the contents of an .fmf file to stdout in raw (--raw) or the yuv4mpegpipe
-format. This allows an .fmf file to be converted to any format that
-ffmpeg supports. For example, to convert the file x.fmf to x.avi using
-the MPEG4 codec:
+Pipe the contents of an .fmf file to stdout in raw (--raw) or the
+yuv4mpegpipe format. This allows an .fmf file to be converted to many
+formats. For example, to convert the file x.fmf to x.mp4 using the
+h264 codec:
 
-%prog x.fmf > x.y4m
-ffmpeg -vcodec msmpeg4v2 -i x.y4m x.avi
+%prog x.fmf | x264 --stdin y4m - -o x.mp4
 
 the raw format can be viewed directly using gstreamer (but rememeber to set
 the video width and height)
