@@ -11,18 +11,43 @@ if 1:
     # raise an exception).
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-def encode_plane( frame, color=1 ):
-    if color==0:
-        buf = frame.tostring()
-    elif color==1:
-        # Convert pure luminance data (mono8) into YCbCr. First plane
-        # is lumance data, next two planes are color chrominance.
-        h,w = frame.shape
-        nh = h*3//2
-        f2 = numpy.zeros( (nh,w), dtype=numpy.uint8)
-        f2[:h, :] = frame
-        f2[h:, :] = 128
-        buf = f2.tostring()
+def check_format_and_color(buffer_width, buffer_height, format=None, color=1):
+    final_width, final_height = buffer_width, buffer_height
+
+    if format in ['mono8:bggr','mono8:gbrg', 'mono8:grbg',
+                  'raw8:bggr','raw8:gbrg', 'raw8:grbg',
+                  ] and color==0:
+        print >> sys.stderr, 'fmfcat taking green channel as luminance'
+        final_width = buffer_width//2
+        final_height = buffer_height//2
+
+    return final_width, final_height
+
+def encode_plane( frame, color=1, format=None ):
+    if format in ['mono8','raw8']:
+        if color==0:
+            buf = frame.tostring()
+        elif color==1:
+            # Convert pure luminance data (mono8) into YCbCr. First plane
+            # is lumance data, next two planes are color chrominance.
+            h,w = frame.shape
+            nh = h*3//2
+            f2 = numpy.zeros( (nh,w), dtype=numpy.uint8)
+            f2[:h, :] = frame
+            f2[h:, :] = 128
+            buf = f2.tostring()
+    else:
+        if format in ('mono8:bggr','mono8:gbrg', 'mono8:grbg',
+                      'raw8:bggr','raw8:gbrg', 'raw8:grbg') and color==0:
+            pattern = format.split(':')[1]
+            if pattern == 'bggr':
+                frame2 = frame[1::2,0::2] # take even rows, odd columns
+            elif pattern in ('gbrg','grbg'):
+                frame2 = frame[0::2,0::2] # take odd rows, odd columns
+            buf = frame2.tostring()
+        else:
+            raise NotImplementedError('format=%r, color=%d not supported.'%(
+                format,color))
     return buf
 
 def doit( filename,
@@ -37,29 +62,31 @@ def doit( filename,
           non_blocking = False
           ):
     fmf = FMF.FlyMovie(filename)
-    if not raw and fmf.get_format() not in ['MONO8','RAW8']:
-        raise NotImplementedError('Only MONO8 and RAW8 formats are currently supported.')
+    format = fmf.get_format().lower()
     width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
     height = fmf.get_height()
 
     if autocrop==0:
-        use_width = width
-        use_height = height
+        buffer_width = width
+        buffer_height = height
     else:
         if autocrop==1:
-            use_width  = (width >> 1) << 1
-            use_height = height
+            buffer_width  = (width >> 1) << 1
+            buffer_height = height
         elif autocrop==2:
-            use_width  = (width >> 4) << 4
-            use_height  = (height >> 4) << 4
+            buffer_width  = (width >> 4) << 4
+            buffer_height  = (height >> 4) << 4
         else:
             raise ValueError('Unknown autocrop value: %s'%autocrop)
-        if use_width!=width or use_height!=height:
+        if buffer_width!=width or buffer_height!=height:
             print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(
-                width,height, use_width,use_height)
+                width,height, buffer_width,buffer_height)
+
+    final_width, final_height = check_format_and_color(buffer_width, buffer_height,
+                                                       format=format, color=color)
 
     if raw:
-        print >> sys.stderr, 'raw image width=%d height=%d' %(use_width,use_height)
+        print >> sys.stderr, 'raw image width=%d height=%d' %(final_width,final_height)
 
     Y4M_MAGIC = 'YUV4MPEG2'
     Y4M_FRAME_MAGIC = 'FRAME'
@@ -83,7 +110,7 @@ def doit( filename,
         fcntl.fcntl(out_fd.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
     if not raw:
-        out_fd.write('%(Y4M_MAGIC)s W%(use_width)d H%(use_height)d '
+        out_fd.write('%(Y4M_MAGIC)s W%(final_width)d H%(final_height)d '
                      'F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d '
                      '%(colorspace)s Xconverted-by-fmfcat\n'%locals())
     while 1:
@@ -99,9 +126,9 @@ def doit( filename,
             frame = numpy.rot90(numpy.rot90(frame))
 
         if autocrop:
-            frame = frame[:use_height,:use_width]
+            frame = frame[:buffer_height,:buffer_width]
 
-        buf = encode_plane( frame, color=color )
+        buf = encode_plane( frame, color=color, format=format )
         while 1:
             try:
                 out_fd.write(buf)
