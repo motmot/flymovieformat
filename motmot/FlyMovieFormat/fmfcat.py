@@ -23,14 +23,29 @@ def check_format_and_color(buffer_width, buffer_height, format=None, color=1):
 
     return final_width, final_height
 
+def quarter(cr):
+    """get quarter size (by area) array with low-pass filtering"""
+    assert cr.dtype==numpy.uint8
+    assert cr.ndim==2
+    assert cr.shape[0]%2==0
+    assert cr.shape[1]%2==0
+    accum = numpy.zeros((cr.shape[0]//2, cr.shape[1]//2),dtype=numpy.uint16)
+    accum += cr[0::2,0::2]
+    accum += cr[0::2,1::2]
+    accum += cr[1::2,1::2]
+    accum += cr[1::2,0::2]
+    accum = accum >> 2 # divide by four
+    result = accum.astype(numpy.uint8)
+    return result
+
 def encode_plane( frame, color=1, format=None ):
+    h,w = frame.shape
     if format in ['mono8','raw8']:
         if color==0:
             buf = frame.tostring()
         elif color==1:
             # Convert pure luminance data (mono8) into YCbCr. First plane
             # is lumance data, next two planes are color chrominance.
-            h,w = frame.shape
             nh = h*3//2
             f2 = numpy.zeros( (nh,w), dtype=numpy.uint8)
             f2[:h, :] = frame
@@ -38,13 +53,43 @@ def encode_plane( frame, color=1, format=None ):
             buf = f2.tostring()
     else:
         if format in ('mono8:bggr','mono8:gbrg', 'mono8:grbg',
-                      'raw8:bggr','raw8:gbrg', 'raw8:grbg') and color==0:
+                      'raw8:bggr','raw8:gbrg', 'raw8:grbg'):
             pattern = format.split(':')[1]
-            if pattern == 'bggr':
-                frame2 = frame[1::2,0::2] # take even rows, odd columns
-            elif pattern in ('gbrg','grbg'):
-                frame2 = frame[0::2,0::2] # take odd rows, odd columns
-            buf = frame2.tostring()
+            if color==0:
+                if pattern == 'bggr':
+                    frame2 = frame[1::2,0::2] # take even rows, odd columns
+                elif pattern in ('gbrg','grbg'):
+                    frame2 = frame[0::2,0::2] # take odd rows, odd columns
+                buf = frame2.tostring()
+            else:
+
+                import cv2
+                if pattern=='bggr':
+                    code = cv2.COLOR_BAYER_BG2RGB
+                elif pattern=='gbrg':
+                    code = cv2.COLOR_BAYER_GB2RGB
+                else:
+                    assert pattern=='grbg'
+                    code = cv2.COLOR_BAYER_GR2RGB
+                rgb_image = cv2.cvtColor(frame,code)
+                ycbcr = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2YCR_CB)
+
+                y =  ycbcr[:,:,0]
+                cb = ycbcr[:,:,1]
+                cr = ycbcr[:,:,2]
+
+                nh = h*3//2
+                w2 = w//2
+                f2 = numpy.empty( (nh,w), dtype=numpy.uint8)
+                f2[:h, :] = y
+                red_start = w*h
+                red_q = quarter(cr)
+                blue_q = quarter(cb)
+                q = red_q.shape[0]*red_q.shape[1]
+                f2.flat[red_start:red_start+q] = red_q
+                f2.flat[red_start+q:] = blue_q
+                buf = f2.tostring()
+                return buf
         else:
             raise NotImplementedError('format=%r, color=%d not supported.'%(
                 format,color))
