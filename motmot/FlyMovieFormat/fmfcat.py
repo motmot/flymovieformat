@@ -20,7 +20,8 @@ def check_format_and_color(buffer_width, buffer_height, format=None, color=1):
         print >> sys.stderr, 'fmfcat taking green channel as luminance'
         final_width = buffer_width//2
         final_height = buffer_height//2
-
+    elif format=='rgb8':
+        final_width = buffer_width//3
     return final_width, final_height
 
 def quarter(cr):
@@ -38,14 +39,36 @@ def quarter(cr):
     result = accum.astype(numpy.uint8)
     return result
 
+def get_yuv420_from_rgb(rgb_image):
+    import cv2
+    ycbcr = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2YCR_CB)
+
+    y =  ycbcr[:,:,0]
+    cb = ycbcr[:,:,1]
+    cr = ycbcr[:,:,2]
+
+    h,w = rgb_image.shape[:2]
+    nh = h*3//2
+    w2 = w//2
+    f2 = numpy.empty( (nh,w), dtype=numpy.uint8)
+    f2[:h, :] = y
+    red_start = w*h
+    red_q = quarter(cr)
+    blue_q = quarter(cb)
+    q = red_q.shape[0]*red_q.shape[1]
+    f2.flat[red_start:red_start+q] = red_q
+    f2.flat[red_start+q:] = blue_q
+    buf = f2.tostring()
+    return buf
+
 def encode_plane( frame, color=1, format=None ):
-    h,w = frame.shape
     if format in ['mono8','raw8']:
         if color==0:
             buf = frame.tostring()
         elif color==1:
             # Convert pure luminance data (mono8) into YCbCr. First plane
             # is lumance data, next two planes are color chrominance.
+            h,w = frame.shape
             nh = h*3//2
             f2 = numpy.zeros( (nh,w), dtype=numpy.uint8)
             f2[:h, :] = frame
@@ -62,7 +85,6 @@ def encode_plane( frame, color=1, format=None ):
                     frame2 = frame[0::2,0::2] # take odd rows, odd columns
                 buf = frame2.tostring()
             else:
-
                 import cv2
                 if pattern=='bggr':
                     code = cv2.COLOR_BAYER_BG2RGB
@@ -72,24 +94,12 @@ def encode_plane( frame, color=1, format=None ):
                     assert pattern=='grbg'
                     code = cv2.COLOR_BAYER_GR2RGB
                 rgb_image = cv2.cvtColor(frame,code)
-                ycbcr = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2YCR_CB)
-
-                y =  ycbcr[:,:,0]
-                cb = ycbcr[:,:,1]
-                cr = ycbcr[:,:,2]
-
-                nh = h*3//2
-                w2 = w//2
-                f2 = numpy.empty( (nh,w), dtype=numpy.uint8)
-                f2[:h, :] = y
-                red_start = w*h
-                red_q = quarter(cr)
-                blue_q = quarter(cb)
-                q = red_q.shape[0]*red_q.shape[1]
-                f2.flat[red_start:red_start+q] = red_q
-                f2.flat[red_start+q:] = blue_q
-                buf = f2.tostring()
-                return buf
+                buf = get_yuv420_from_rgb(rgb_image)
+        elif format=='rgb8' and color==1:
+            newshape = frame.shape[0], frame.shape[1]//3, 3
+            newframe = numpy.empty( newshape, dtype=numpy.uint8)
+            newframe.flat = frame.flat
+            buf = get_yuv420_from_rgb(newframe)
         else:
             raise NotImplementedError('format=%r, color=%d not supported.'%(
                 format,color))
@@ -108,7 +118,7 @@ def doit( filename,
           ):
     fmf = FMF.FlyMovie(filename)
     format = fmf.get_format().lower()
-    width = fmf.get_width()//(fmf.get_bits_per_pixel()//8)
+    width = fmf.get_width()
     height = fmf.get_height()
 
     if autocrop==0:
@@ -126,6 +136,8 @@ def doit( filename,
         if buffer_width!=width or buffer_height!=height:
             print >> sys.stderr, 'fmfcat autocropping from (%d,%d) to (%d,%d)'%(
                 width,height, buffer_width,buffer_height)
+    if format=='rgb8':
+        buffer_width*=3
 
     final_width, final_height = check_format_and_color(buffer_width, buffer_height,
                                                        format=format, color=color)
@@ -170,7 +182,7 @@ def doit( filename,
         if rotate_180:
             frame = numpy.rot90(numpy.rot90(frame))
 
-        if autocrop:
+        if autocrop > 0:
             frame = frame[:buffer_height,:buffer_width]
 
         buf = encode_plane( frame, color=color, format=format )
