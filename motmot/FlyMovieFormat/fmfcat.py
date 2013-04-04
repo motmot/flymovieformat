@@ -114,10 +114,13 @@ def doit( filename,
           autocrop = 1,
           color = 1,
           raw = False,
-          non_blocking = False
+          non_blocking = False,
+          format = None,
           ):
     fmf = FMF.FlyMovie(filename)
-    format = fmf.get_format().lower()
+    if format is None:
+        format = fmf.get_format()
+    format = format.lower()
     width = fmf.get_width()
     height = fmf.get_height()
 
@@ -226,7 +229,10 @@ the video width and height)
                                             '2=width%16==0,height%16==0) ')
 
     parser.add_option('--color', default=1, type=int,
-                      help='set color mode (0:mono, 1:YCbCr 420)')
+                      help='set color output mode (0:mono, 1:YCbCr 420)')
+
+    parser.add_option('--format', default=None, type=str,
+                      help='force the input format (e.g. "mono8:bggr")')
 
     parser.add_option('--raten', default=25, type=int,
                       help='numerator of fps (frame rate)')
@@ -265,6 +271,7 @@ the video width and height)
           color = options.color,
           raw = options.raw,
           non_blocking = options.non_blocking,
+          format = options.format,
           )
 
 if __name__=='__main__':
