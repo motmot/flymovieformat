@@ -116,12 +116,15 @@ def doit( filename,
           raw = False,
           non_blocking = False,
           format = None,
+          clip_one_pixel = False,
           ):
     fmf = FMF.FlyMovie(filename)
     if format is None:
         format = fmf.get_format()
     format = format.lower()
     width = fmf.get_width()
+    if clip_one_pixel:
+        width -= 1
     height = fmf.get_height()
 
     if autocrop==0:
@@ -178,6 +181,8 @@ def doit( filename,
             frame,timestamp = fmf.get_next_frame()
         except FMF.NoMoreFramesException, err:
             break
+        if clip_one_pixel:
+            frame = frame[:,1:]
 
         if not raw:
             out_fd.write('%(Y4M_FRAME_MAGIC)s\n'%locals())
@@ -248,6 +253,10 @@ the video width and height)
                       default=False,
                       help='do not include any YUV4MPEG2 headers, just output raw frame data' )
 
+    parser.add_option('--off_by_one', action='store_true',
+                      default=False, dest='clip_one_pixel',
+                      help='clip leftmost pixels (for off-by-one errors with Bayer pattern)')
+
     parser.add_option('--non-blocking', action='store_true',
                       default=False,
                       help='set stdout to be nonblocking (helps with ffmpeg, causes corruption with gstreamer' )
@@ -272,6 +281,7 @@ the video width and height)
           raw = options.raw,
           non_blocking = options.non_blocking,
           format = options.format,
+          clip_one_pixel = options.clip_one_pixel,
           )
 
 if __name__=='__main__':
