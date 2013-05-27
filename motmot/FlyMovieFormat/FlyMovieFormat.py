@@ -223,6 +223,14 @@ class FlyMovie:
         """
         return self.framesize[0]
 
+    @property
+    def height(self):
+        return self.get_height()
+
+    @property
+    def width(self):
+        return self.get_width()//(self.get_bits_per_pixel()//8)
+
     def get_n_frames(self):
         """get the number of frames
 
