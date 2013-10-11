@@ -13,7 +13,11 @@ def doit(input_fname,
          stop=None,
          gain=1.0,
          offset=0.0,
+         blur=0.0,
          ):
+    if blur != 0:
+        import scipy.ndimage.filters
+
     output_fname = os.path.splitext(input_fname)[0]+'.highcontrast.fmf'
     in_fmf = FMF.FlyMovie(input_fname)
     input_format = in_fmf.get_format()
@@ -93,6 +97,11 @@ def doit(input_fname,
                 for channel_name, channel_idx in channels:
                     frame[:,:,channel_idx] = (frame[:,:,channel_idx]-orig_center[channel_name])/orig_range[channel_name]
                     frame[:,:,channel_idx] = frame[:,:,channel_idx] * new_range + new_center
+
+            if blur != 0:
+                for chan in range( frame.shape[2] ):
+                    # filter each channel independently
+                    frame[:,:,chan] = scipy.ndimage.filters.gaussian_filter(frame[:,:,chan], blur)
             frame = np.clip(frame,0,255).astype(np.uint8)
             if output_format is 'MONO8':
                 # drop dimension
@@ -124,6 +133,9 @@ def main():
     parser.add_option("--offset", type='float',
                       default=1.0)
 
+    parser.add_option("--blur", type='float',
+                      default=0.0)
+
     (options, args) = parser.parse_args()
     filename = args[0]
     doit(filename,
@@ -132,6 +144,7 @@ def main():
          gain = options.gain,
          offset = options.offset,
          single_channel=options.single_channel,
+         blur = options.blur,
          )
 
 if __name__=='__main__':
