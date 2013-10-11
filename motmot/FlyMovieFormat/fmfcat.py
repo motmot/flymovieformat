@@ -110,6 +110,7 @@ def doit( filename,
           rated=1,  # denom
           aspectn = 0, # numerator
           aspectd = 0, # denom
+          use_nth_frame = 1, # nth frame to skip
           rotate_180 = False,
           autocrop = 1,
           color = 1,
@@ -176,6 +177,8 @@ def doit( filename,
         out_fd.write('%(Y4M_MAGIC)s W%(final_width)d H%(final_height)d '
                      'F%(raten)d:%(rated)d %(inter)s A%(aspectn)d:%(aspectd)d '
                      '%(colorspace)s Xconverted-by-fmfcat\n'%locals())
+
+    n_frames_done = 0
     while 1:
         try:
             frame,timestamp = fmf.get_next_frame()
@@ -183,6 +186,11 @@ def doit( filename,
             break
         if clip_one_pixel:
             frame = frame[:,1:]
+
+        if n_frames_done % use_nth_frame != 0:
+            n_frames_done +=1
+            continue
+        n_frames_done +=1
 
         if not raw:
             out_fd.write('%(Y4M_FRAME_MAGIC)s\n'%locals())
@@ -244,6 +252,9 @@ the video width and height)
     parser.add_option('--rated', default=1, type=int,
                       help='denominator of fps (frame rate)')
 
+    parser.add_option('--use-nth-frame', default=1, type=int,
+                      help='emit only Nth frame')
+
     parser.add_option('--aspectn', default=0, type=int,
                       help='numerator of aspect ratio')
     parser.add_option('--aspectd', default=0, type=int,
@@ -282,6 +293,7 @@ the video width and height)
           non_blocking = options.non_blocking,
           format = options.format,
           clip_one_pixel = options.clip_one_pixel,
+          use_nth_frame = options.use_nth_frame,
           )
 
 if __name__=='__main__':
