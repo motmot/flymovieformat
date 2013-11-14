@@ -150,6 +150,8 @@ class FlyMovie:
         if version not in (1,3):
             raise NotImplementedError('Can only read version 1 and 3 files')
 
+        self.version = version
+
         if version  == 1:
             self.format = 'MONO8'
             self.bits_per_pixel = 8
