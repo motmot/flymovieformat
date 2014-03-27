@@ -96,6 +96,8 @@ def format2bpp_func(format):
     if result is None:
         if format.startswith('MONO8:'):
             result=8
+        elif format.startswith('RAW8:'):
+            result=8
         elif format.startswith('MONO32f:'):
             result=32
         else:
@@ -268,7 +270,8 @@ class FlyMovie:
         timestamp_buf = data[:self.timestamp_len]
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
 
-        if self.format in ('MONO8','RAW8') or self.format.startswith('MONO8:'):
+        if (self.format in ('MONO8','RAW8') or self.format.startswith('MONO8:') or
+                self.format.startswith('RAW8:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
         elif self.format in ('YUV422'):
