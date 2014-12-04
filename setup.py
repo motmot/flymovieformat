@@ -1,7 +1,5 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
-
-kws = {}
 
 setup(name='motmot.FlyMovieFormat',
       description='support for .fmf (fly movie format) files',
@@ -18,10 +16,12 @@ This is a subpackage of the motmot family of digital image utilities.
       license='BSD',
       url='http://code.astraw.com/projects/motmot/fly-movie-format.html',
       namespace_packages = ['motmot'],
-      packages = find_packages(),
+      packages = ['motmot','motmot.FlyMovieFormat'],
       package_data = {'motmot.FlyMovieFormat':['playfmf.xrc',
                                                'matplotlibrc',
                                                'test_raw8.fmf',
+                                               'test_rgb8.fmf',
+                                               'test_rgb32f.fmf',
                                                'test_mono8.fmf',
                                                'test_mono32f.fmf',
                                                'test_yuv422.fmf',
@@ -43,4 +43,4 @@ This is a subpackage of the motmot family of digital image utilities.
                                               'image_sequence = motmot.FlyMovieFormat.saver_plugins:ImageSequenceSaverPlugin',
                                        ],
     },
-      **kws)
+      )
