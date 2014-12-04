@@ -82,7 +82,7 @@ def fmf2images(filename, imgformat='png',
         frame,timestamp = fly_movie.get_frame(frame_number)
 
         mono=False
-        if (fmf_format in ['RGB8','ARGB8','YUV411','YUV422'] or
+        if (fmf_format in ['RGB8','RGB32f','ARGB8','YUV411','YUV422'] or
             fmf_format.startswith('MONO8:') or
             fmf_format.startswith('MONO32f:')):
             save_frame = imops.to_rgb8(fmf_format,frame)
