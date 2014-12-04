@@ -37,20 +37,26 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     interval = options.interval
     assert interval >= 1
     imgformat = options.extension
+    fmf2images(filename, imgformat,
+               startframe=startframe, endframe=endframe, interval=interval,
+               prefix=options.prefix,
+               outdir=options.outdir,
+               progress=options.progress)
 
+def fmf2images(filename, imgformat='png',
+               startframe=0,endframe=-1,interval=1,
+               prefix=None,outdir=None,progress=False):
     base,ext = os.path.splitext(filename)
     if ext != '.fmf':
         print 'fmf_filename does not end in .fmf'
         sys.exit()
 
     path,base = os.path.split(base)
-    if options.prefix is not None:
-        base = options.prefix
+    if prefix is not None:
+        base = prefix
 
-    if options.outdir is None:
+    if outdir is None:
         outdir = path
-    else:
-        outdir = options.outdir
 
     fly_movie = FlyMovieFormat.FlyMovie(filename)
     fmf_format = fly_movie.get_format()
@@ -61,7 +67,7 @@ fmf2bmps myvideo.fmf --start=10 --stop=100 --extension=jpg --outdir=tmp
     fly_movie.seek(startframe)
     frames = range(startframe,endframe+1,interval)
     n_frames = len(frames)
-    if options.progress:
+    if progress:
         import progressbar
         widgets=['fmf2bmps', progressbar.Percentage(), ' ',
                  progressbar.Bar(), ' ', progressbar.ETA()]
