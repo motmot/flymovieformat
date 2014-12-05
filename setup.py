@@ -29,6 +29,7 @@ This is a subpackage of the motmot family of digital image utilities.
       scripts = ['scripts/pvn2fmf'],
       entry_points = {
     'console_scripts': ['fmf2bmps = motmot.FlyMovieFormat.fmf2bmps:main',
+                        'fmf_from_images = motmot.FlyMovieFormat.images2fmf:main',
                         'fmf_collapse = motmot.FlyMovieFormat.fmf_collapse:main',
                         'fmf_info = motmot.FlyMovieFormat.fmf_info:main',
                         'fmfcat = motmot.FlyMovieFormat.fmfcat:main',
