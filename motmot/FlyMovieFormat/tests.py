@@ -1,8 +1,13 @@
+import motmot
+import motmot.FlyMovieFormat.FlyMovieFormat as FlyMovieFormat
 import unittest
-import FlyMovieFormat
 import pkg_resources # requires setuptools
 import numpy
-import tempfile, os, shutil
+import tempfile, os, shutil, glob
+
+import motmot.FlyMovieFormat.fmf2bmps as fmf2bmps
+import motmot.FlyMovieFormat.images2fmf as images2fmf
+import motmot.imops.imops as imops
 
 fmf_filenames = [pkg_resources.resource_filename(__name__,x) for x in\
     ['test_mono8.fmf',
@@ -53,6 +58,42 @@ class TestFMF(unittest.TestCase):
                 fmf_in.close()
                 fmf_out.close()
                 tmpfile.close()
+
+    def test_roundtrip_images(self):
+        for filename in fmf_filenames:
+            if filename.endswith('raw8.fmf'):
+                continue
+
+            for version in [3]:
+                # write a new movie
+                tmp_dir = tempfile.mkdtemp()
+                input_glob = os.path.join( tmp_dir, '*' )
+                out_fname = os.path.join( tmp_dir, 'output.fmf' )
+                try:
+                    fmf2bmps.fmf2images( filename, outdir=tmp_dir )
+                    input_list = glob.glob(input_glob)
+                    input_list.sort()
+
+                    images2fmf.images2fmf( input_list, out_fname )
+
+                    fmf_in = FlyMovieFormat.FlyMovie(filename)
+                    fmf_out = FlyMovieFormat.FlyMovie(out_fname)
+                    assert fmf_in.get_n_frames() == fmf_out.get_n_frames()
+                    for i in range(fmf_in.get_n_frames()):
+
+                        frame_in1, timestamp_in = fmf_in.get_next_frame()
+                        frame_out1, timestamp_out = fmf_out.get_next_frame()
+
+                        frame_in  = imops.to_rgb8(fmf_in.format, frame_in1)
+                        frame_out = imops.to_rgb8(fmf_out.format,frame_out1)
+
+                        assert frame_in.shape == frame_out.shape
+                        assert numpy.allclose(frame_in,frame_out)
+                    fmf_in.close()
+                    fmf_out.close()
+
+                finally:
+                    shutil.rmtree( tmp_dir )
 
     def test_random_vs_sequential_reads(self):
         fmf = FlyMovieFormat.FlyMovie(
