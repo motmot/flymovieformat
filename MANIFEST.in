@@ -10,3 +10,5 @@ include *.cfg
 include *.mime
 include *.xml
 include *.desktop
+include fmf2m4v/*
+include matlab/*
