@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys, time, os, gc, datetime, warnings
 from optparse import OptionParser
 
@@ -87,7 +88,7 @@ class PlotPanel(wx.Panel):
 
 ##    def _onButton(self,mouse_event):
 ##        if mouse_event.inaxes:
-##            print "%.2f, %.2f"%(mouse_event.xdata, mouse_event.ydata)
+##            print("%.2f, %.2f"%(mouse_event.xdata, mouse_event.ydata))
 
     def _convert_to_displayable(self,frame):
         if self.format in ['RGB8','ARGB8','YUV411','YUV422','RGB32f']:
@@ -226,7 +227,7 @@ class MyApp(wx.App):
                 entry_point = egg.get_entry_info('motmot.FlyMovieFormat.exporter_plugins', name)
                 try:
                     PluginClass = entry_point.load()
-                except Exception,x:
+                except Exception as x:
                     if int(os.environ.get('PLAYFMF_RAISE_ERRORS','0')):
                         raise x
                     else:
@@ -289,7 +290,7 @@ class MyApp(wx.App):
                         test_frame,
                         allow_partial_frames=True)
                 except FlyMovieFormat.NoMoreFramesException:
-                    print >> sys.stderr,'no frame %d, shortening movie'%test_frame
+                    print('no frame %d, shortening movie'%test_frame,file=sys.stderr)
                 else:
                     # if we get here, it means we had a good frame
                     self.n_frames = test_frame+1
@@ -339,7 +340,7 @@ class MyApp(wx.App):
         try:
             my_datetime = datetime.datetime.fromtimestamp(timestamp)
             label.SetLabel('%.3f (sec) %s'%(timestamp, my_datetime.isoformat()))
-        except ValueError,err:
+        except ValueError as err:
             label.SetLabel('%.3f (sec)'%(timestamp,))
 
     def OnQuit(self, event):
