@@ -11,7 +11,6 @@ RESFILE = pkg_resources.resource_filename(__name__,"playfmf.xrc") # trigger extr
 
 # py2exe stuff done
 import FlyMovieFormat
-import PIL.Image as Image
 import motmot.imops.imops as imops
 
 import wx
