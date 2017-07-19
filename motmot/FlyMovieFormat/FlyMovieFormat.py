@@ -78,27 +78,27 @@ CHUNK_TIMESTAMP_FMT = b'd' # XXX struct.pack('<d',nan) dies
 CHUNK_DATASIZE_FMT = b'<Q'
 
 format2bpp = { # convert format to bits per pixel
-    'RAW8':8,
-    'RAW16':16,
-    'RAW32f':32,
-    'MONO8':8,
-    'MONO16':16,
-    'MONO32f':32,
-    'RGB8':24,
-    'ARGB8':32,
-    'YUV411':12,
-    'YUV422':16,
-    'RGB32f':32*3,
+    b'RAW8':8,
+    b'RAW16':16,
+    b'RAW32f':32,
+    b'MONO8':8,
+    b'MONO16':16,
+    b'MONO32f':32,
+    b'RGB8':24,
+    b'ARGB8':32,
+    b'YUV411':12,
+    b'YUV422':16,
+    b'RGB32f':32*3,
     }
 
 def format2bpp_func(format):
     result = format2bpp.get(format,None)
     if result is None:
-        if format.startswith('MONO8:'):
+        if format.startswith(b'MONO8:'):
             result=8
-        elif format.startswith('RAW8:'):
+        elif format.startswith(b'RAW8:'):
             result=8
-        elif format.startswith('MONO32f:'):
+        elif format.startswith(b'MONO32f:'):
             result=32
         else:
             raise ValueError('unknown format: %s'%format)
@@ -160,7 +160,7 @@ class FlyMovie:
         self.version = version
 
         if version  == 1:
-            self.format = 'MONO8'
+            self.format = b'MONO8'
             self.bits_per_pixel = 8
         elif version == 3:
             format_len = unpack(FORMAT_LEN_FMT,r(size(FORMAT_LEN_FMT)))[0]
@@ -275,23 +275,23 @@ class FlyMovie:
         timestamp_buf = data[:self.timestamp_len]
         timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
 
-        if (self.format in ('MONO8','RAW8') or self.format.startswith('MONO8:') or
-                self.format.startswith('RAW8:')):
+        if (self.format in (b'MONO8',b'RAW8') or self.format.startswith(b'MONO8:') or
+                self.format.startswith(b'RAW8:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint8)
             frame.shape = self.framesize
-        elif self.format in ('YUV422'):
+        elif self.format in (b'YUV422'):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.uint16)
             frame.shape = self.framesize
-        elif self.format in ('RGB8'):
+        elif self.format in (b'RGB8'):
             frame = numpy.fromstring(data[self.timestamp_len:],
                                      dtype=numpy.uint8)
             h,w = self.framesize
             frame.shape = (h,w*3)
-        elif (self.format in ('MONO32f','RAW32f') or
-              self.format.startswith('MONO32f:')):
+        elif (self.format in (b'MONO32f',b'RAW32f') or
+              self.format.startswith(b'MONO32f:')):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
             frame.shape = self.framesize
-        elif (self.format=='RGB32f'):
+        elif (self.format==b'RGB32f'):
             frame = numpy.fromstring(data[self.timestamp_len:],numpy.float32)
             frame.shape = self.framesize[0], self.framesize[1], 3
         else:
@@ -393,16 +393,16 @@ def mmap_flymovie( *args, **kwargs ):
     Note: to map a 4 GB or larger file to RAM, a 64 bit computer is
     required.
     """
-    supported_formats = ['MONO8','RAW8']
+    supported_formats = [b'MONO8',b'RAW8']
     fmf = FlyMovie(*args,**kwargs)
 
     format = fmf.get_format()
 
-    if fmf.bits_per_pixel == 8 and format in ['MONO8','RAW8']:
+    if fmf.bits_per_pixel == 8 and format in [b'MONO8',b'RAW8']:
         dtype_str = '|u1'
-    elif fmf.bits_per_pixel == 16 and format in ['MONO16','RAW16','YUV422']:
+    elif fmf.bits_per_pixel == 16 and format in [b'MONO16',b'RAW16',b'YUV422']:
         dtype_str = '<u2'
-    elif fmf.bits_per_pixel == 32 and format in ['MONO32f','RAW32f']:
+    elif fmf.bits_per_pixel == 32 and format in [b'MONO32f',b'RAW32f']:
         dtype_str = '<f4'
     else:
         raise ValueError("don't know how to encode dtype of your format")
@@ -471,9 +471,9 @@ class FlyMovieSaver:
             self.file.write(format)
             self.file.write(struct.pack(BITS_PER_PIXEL_FMT,bits_per_pixel))
         else:
-            if format is None: format = 'MONO8'
+            if format is None: format = b'MONO8'
             if bits_per_pixel is None: bits_per_pixel = 8
-            if format != 'MONO8' or bits_per_pixel != 8:
+            if format != b'MONO8' or bits_per_pixel != 8:
                 raise ValueError("version 1 fmf files only support MONO8 8bpp images")
         self.format = format
         self.bits_per_pixel = bits_per_pixel
@@ -501,7 +501,7 @@ class FlyMovieSaver:
         frame = numpy.asarray(origframe)
         thisshape = frame.shape
 
-        if self.format=='RGB8' and frame.ndim==2:
+        if self.format==b'RGB8' and frame.ndim==2:
             # image in raw encoded shape
             thisshape = (frame.shape[0], frame.shape[1]//3)
 
@@ -563,7 +563,7 @@ class FlyMovieSaver:
 
         # frame data are always type uint8, so frame shape (width) varies if data format not MONO8
         self.framesize = frame.shape
-        if self.format=='RGB8' and frame.ndim==2:
+        if self.format==b'RGB8' and frame.ndim==2:
             # image in raw encoded shape
             self.framesize = (frame.shape[0], frame.shape[1]//3)
 
