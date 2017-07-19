@@ -64,18 +64,18 @@ import time
 import math
 
 # version 1 formats:
-VERSION_FMT = '<I'
-FORMAT_LEN_FMT = '<I'
-BITS_PER_PIXEL_FMT = '<I'
-FRAMESIZE_FMT = '<II'
-CHUNKSIZE_FMT = '<Q'
-N_FRAME_FMT = '<Q'
-TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
+VERSION_FMT = b'<I'
+FORMAT_LEN_FMT = b'<I'
+BITS_PER_PIXEL_FMT = b'<I'
+FRAMESIZE_FMT = b'<II'
+CHUNKSIZE_FMT = b'<Q'
+N_FRAME_FMT = b'<Q'
+TIMESTAMP_FMT = b'd' # XXX struct.pack('<d',nan) dies
 
 # additional version 2 formats:
-CHUNK_N_FRAME_FMT = '<Q'
-CHUNK_TIMESTAMP_FMT = 'd' # XXX struct.pack('<d',nan) dies
-CHUNK_DATASIZE_FMT = '<Q'
+CHUNK_N_FRAME_FMT = b'<Q'
+CHUNK_TIMESTAMP_FMT = b'd' # XXX struct.pack('<d',nan) dies
+CHUNK_DATASIZE_FMT = b'<Q'
 
 format2bpp = { # convert format to bits per pixel
     'RAW8':8,
@@ -124,12 +124,17 @@ class FlyMovie:
     """
     def __init__(self,file,check_integrity=False):
 
-        if isinstance(file,basestring):
+        try:
+            is_string = isinstance(file,basestring) # Python 2.x
+        except NameError:
+            is_string = isinstance(file,str) # Python 3.x
+
+        if is_string:
             self.filename = file
             try:
                 self.file = open(self.filename,mode="r+b")
             except IOError:
-                self.file = open(self.filename,mode="r")
+                self.file = open(self.filename,mode="rb")
                 self.writeable = False
             else:
                 self.writeable = True
@@ -173,7 +178,7 @@ class FlyMovie:
         self.chunk_start = self.file.tell()
         self.next_frame = None
 
-	if self.n_frames == 0: # unknown movie length, read to find out
+        if self.n_frames == 0: # unknown movie length, read to find out
             self.n_frames = self.compute_n_frames_from_file_size()
 
         if check_integrity:
@@ -186,7 +191,7 @@ class FlyMovie:
                     self.n_frames -= 1
                     if self.n_frames == 0:
                         break
-	    self.file.seek(self.chunk_start) # go back to beginning
+        self.file.seek(self.chunk_start) # go back to beginning
 
         self._all_timestamps = None # cache
 
@@ -344,7 +349,7 @@ class FlyMovie:
             while 1:
                 timestamp_buf = self.file.read( read_len )
                 self.file.seek( self.bytes_per_chunk-read_len, 1) # seek to next frame
-                if timestamp_buf == '':
+                if len(timestamp_buf) == 0:
                     break
                 timestamp, = struct.unpack(TIMESTAMP_FMT,timestamp_buf)
                 self._all_timestamps.append( timestamp )
