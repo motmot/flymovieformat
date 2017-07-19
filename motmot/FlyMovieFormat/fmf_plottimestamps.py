@@ -1,3 +1,4 @@
+from __future__ import print_function
 import FlyMovieFormat
 import sys
 import os
@@ -8,13 +9,13 @@ def main():
     try:
         filename = sys.argv[1]
     except:
-        print 'Usage: fmf_plottimestamps fmf_filename'
+        print('Usage: fmf_plottimestamps fmf_filename')
         sys.exit()
 
 
     path,ext = os.path.splitext(filename)
     if ext != '.fmf':
-        print 'fmf_filename does not end in .fmf'
+        print('fmf_filename does not end in .fmf')
         sys.exit()
 
     fly_movie = FlyMovieFormat.FlyMovie(filename)
@@ -26,12 +27,12 @@ def main():
         pylab.plot(ts)
         pylab.ylabel('timestamp (sec)')
         pylab.xlabel('frame number')
-    
+
     pylab.figure()
     pylab.plot(ts-ts[0])
     pylab.ylabel('relative timestamp (sec)')
     pylab.xlabel('frame number')
-    
+
     pylab.figure()
     ydiff_msec = (ts[1:]-ts[:-1])*1000.0
     max_ydiff = ydiff_msec.max()
@@ -40,6 +41,6 @@ def main():
     pylab.ylabel('IFI (msec)')
     pylab.xlabel('frame number')
     pylab.show()
-    
+
 if __name__=='__main__':
     main()
