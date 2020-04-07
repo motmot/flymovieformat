@@ -3,11 +3,13 @@ import Image
 import numpy as np
 import argparse
 
-mode2format = {'L':'MONO8',
-               'RGB':'RGB8',
-              }
+mode2format = {
+    "L": "MONO8",
+    "RGB": "RGB8",
+}
 
-def images2fmf( input_filenames, out_fname, version=3 ):
+
+def images2fmf(input_filenames, out_fname, version=3):
     """convert a series of images into an .fmf file
 
     arguments
@@ -30,7 +32,7 @@ def images2fmf( input_filenames, out_fname, version=3 ):
     im_mode = None
     fmf_out = None
 
-    for timestamp,in_fname in enumerate(input_filenames):
+    for timestamp, in_fname in enumerate(input_filenames):
         im = Image.open(in_fname)
         if im_size is None:
             im_size = im.size
@@ -41,31 +43,32 @@ def images2fmf( input_filenames, out_fname, version=3 ):
         buf = im.tostring()
 
         if fmf_out is None:
-            fmf_out = FlyMovieFormat.FlyMovieSaver(out_fname,
-                                                   version=version,
-                                                   format=mode2format[im_mode],
-                                                   )
+            fmf_out = FlyMovieFormat.FlyMovieSaver(
+                out_fname, version=version, format=mode2format[im_mode],
+            )
 
-        if im.mode=='L':
-            data = np.fromstring( buf, dtype=np.uint8 )
+        if im.mode == "L":
+            data = np.fromstring(buf, dtype=np.uint8)
             data.shape = (im.size[1], im.size[0])
-        elif im.mode=='RGB':
-            data = np.fromstring( buf, dtype=np.uint8 )
-            data.shape = (im.size[1], im.size[0],3)
+        elif im.mode == "RGB":
+            data = np.fromstring(buf, dtype=np.uint8)
+            data.shape = (im.size[1], im.size[0], 3)
         else:
-            raise NotImplementedError('no support for mode %r'%im.mode)
+            raise NotImplementedError("no support for mode %r" % im.mode)
 
-        fmf_out.add_frame( data, timestamp )
+        fmf_out.add_frame(data, timestamp)
 
     fmf_out.close()
 
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('output_fmf_name', type=str, help='filename of output .fmf')
-    parser.add_argument('input_images', nargs='+', help='input filenames')
+    parser.add_argument("output_fmf_name", type=str, help="filename of output .fmf")
+    parser.add_argument("input_images", nargs="+", help="input filenames")
 
     args = parser.parse_args()
-    images2fmf( args.input_images, args.output_fmf_name )
+    images2fmf(args.input_images, args.output_fmf_name)
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     main()
