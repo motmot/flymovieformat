@@ -1,0 +1,4 @@
+numpy >=1.16,<1.17
+setuptools >=44.1
+Pillow
+motmot.imops >=0.5.12
