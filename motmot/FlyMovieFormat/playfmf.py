@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 import sys, time, os, gc, datetime, warnings
 from optparse import OptionParser
 
@@ -13,7 +14,7 @@ os.environ["MATPLOTLIBRC"] = matplotlibrc_dir
 RESFILE = pkg_resources.resource_filename(__name__, "playfmf.xrc")  # trigger extraction
 
 # py2exe stuff done
-import FlyMovieFormat
+from . import FlyMovieFormat
 import motmot.imops.imops as imops
 
 import wx

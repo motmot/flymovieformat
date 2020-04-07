@@ -1,3 +1,4 @@
+from __future__ import print_function
 from optparse import OptionParser
 import sys
 import motmot.FlyMovieFormat.FlyMovieFormat as FMF
@@ -28,7 +29,7 @@ def check_format_and_color(buffer_width, buffer_height, format=None, color=1):
         ]
         and color == 0
     ):
-        print >>sys.stderr, "fmfcat taking green channel as luminance"
+        print("fmfcat taking green channel as luminance", file=sys.stderr)
         final_width = buffer_width // 2
         final_height = buffer_height // 2
     elif format == "rgb8":
@@ -166,12 +167,12 @@ def doit(
         else:
             raise ValueError("Unknown autocrop value: %s" % autocrop)
         if buffer_width != width or buffer_height != height:
-            print >>sys.stderr, "fmfcat autocropping from (%d,%d) to (%d,%d)" % (
+            print("fmfcat autocropping from (%d,%d) to (%d,%d)" % (
                 width,
                 height,
                 buffer_width,
                 buffer_height,
-            )
+            ), file=sys.stderr)
     if format == "rgb8":
         buffer_width *= 3
 
@@ -180,7 +181,7 @@ def doit(
     )
 
     if raw:
-        print >>sys.stderr, "raw image width=%d height=%d" % (final_width, final_height)
+        print("raw image width=%d height=%d" % (final_width, final_height), file=sys.stderr)
 
     Y4M_MAGIC = "YUV4MPEG2"
     Y4M_FRAME_MAGIC = "FRAME"
@@ -214,7 +215,7 @@ def doit(
     while 1:
         try:
             frame, timestamp = fmf.get_next_frame()
-        except FMF.NoMoreFramesException, err:
+        except FMF.NoMoreFramesException as err:
             break
         if clip_one_pixel:
             frame = frame[:, 1:]
@@ -238,9 +239,9 @@ def doit(
             try:
                 out_fd.write(buf)
                 break
-            except IOError, err:
+            except IOError as err:
                 if err.errno == 11:
-                    print >>sys.stderr, "write error, waiting..."
+                    print("write error, waiting...", file=sys.stderr)
                     time.sleep(0.1)
                     continue
                 raise

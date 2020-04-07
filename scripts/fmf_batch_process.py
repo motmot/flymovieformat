@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import glob
 import motmot.FlyMovieFormat.FlyMovieFormat as FlyMovieFormat
 
@@ -27,14 +28,14 @@ for input_filename in input_filenames:
 
     output_fmf = FlyMovieFormat.FlyMovieSaver(output_filename, version=1)
 
-    print "%(input_filename)s (%(in_width)dx%(in_height)d, " "%(fmax)d frames) ->" % locals()
+    print("%(input_filename)s (%(in_width)dx%(in_height)d, " "%(fmax)d frames) ->" % locals())
 
-    print "    %(output_filename)s (%(width)dx%(height)d, " "%(n_output_frames)d frames) :          " % locals(),
+    print("    %(output_filename)s (%(width)dx%(height)d, " "%(n_output_frames)d frames) :          " % locals(), end=' ')
 
     for i in range(fmin, fmax, finterval):
         frame, timestamp = input_fmf.get_next_frame()
         output_fmf.add_frame(frame[ymin:ymax, xmin:xmax], timestamp)
         j = i + 1
-        print "\b\b\b\b\b\b\b\b\b\b%(j)4d/%(fmax)4d" % locals(),
+        print("\b\b\b\b\b\b\b\b\b\b%(j)4d/%(fmax)4d" % locals(), end=' ')
     output_fmf.close()
-    print
+    print()

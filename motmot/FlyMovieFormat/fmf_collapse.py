@@ -1,6 +1,8 @@
 from __future__ import division
+from __future__ import print_function
+from __future__ import absolute_import
 import os, sys
-import FlyMovieFormat
+from . import FlyMovieFormat
 import Image
 import numpy
 
@@ -10,30 +12,30 @@ def main():
         filename1 = sys.argv[1]
         filename2 = sys.argv[2]
     except:
-        print """Usage: fmf_collapse fmf_filename1 fmf_filename2
+        print("""Usage: fmf_collapse fmf_filename1 fmf_filename2
 
 This program takes a set of .fmf files and saves the mean of all
 frames from all files as a .bmp image file.
 
 The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
 
-"""
+""")
         sys.exit()
 
     path, ext = os.path.splitext(filename1)
     if ext != ".fmf":
-        print "fmf_filename1 does not end in .fmf"
+        print("fmf_filename1 does not end in .fmf")
         sys.exit()
 
     path, ext = os.path.splitext(filename2)
     if ext != ".fmf":
-        print "fmf_filename2 does not end in .fmf"
+        print("fmf_filename2 does not end in .fmf")
         sys.exit()
 
     path1 = os.path.split(os.path.abspath(filename1))[0]
     path2 = os.path.split(os.path.abspath(filename2))[0]
     if path1 != path2:
-        print "path of fmf files not the same"
+        print("path of fmf files not the same")
         sys.exit()
 
     path = path1
@@ -46,8 +48,8 @@ The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
     for imnum, filename in enumerate(files):
         try:
             fly_movie = FlyMovieFormat.FlyMovie(filename)
-        except Exception, x:
-            print "while reading file", filename
+        except Exception as x:
+            print("while reading file", filename)
             raise
         n_frames = fly_movie.get_n_frames()
         accum = None
@@ -67,7 +69,7 @@ The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
         h, w = save_frame.shape
         im = Image.fromstring("L", (w, h), save_frame.tostring())
         f = "cal%02d.bmp" % (imnum + 1)
-        print "saving", f
+        print("saving", f)
         im.save(f)
 
 

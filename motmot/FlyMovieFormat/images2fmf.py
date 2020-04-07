@@ -1,4 +1,5 @@
-import FlyMovieFormat
+from __future__ import absolute_import
+from . import FlyMovieFormat
 import Image
 import numpy as np
 import argparse

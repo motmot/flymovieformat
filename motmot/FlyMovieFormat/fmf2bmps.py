@@ -1,5 +1,7 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import os, sys
-import FlyMovieFormat
+from . import FlyMovieFormat
 import Image
 from optparse import OptionParser
 import motmot.imops.imops as imops
@@ -72,7 +74,7 @@ def fmf2images(
 ):
     base, ext = os.path.splitext(filename)
     if ext != ".fmf":
-        print "fmf_filename does not end in .fmf"
+        print("fmf_filename does not end in .fmf")
         sys.exit()
 
     path, base = os.path.split(base)

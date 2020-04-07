@@ -1,5 +1,6 @@
 from __future__ import print_function
-import FlyMovieFormat
+from __future__ import absolute_import
+from . import FlyMovieFormat
 import sys
 import os
 import pylab
