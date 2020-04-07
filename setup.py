@@ -1,17 +1,19 @@
 from setuptools import setup
 import os
+from os import path
+from io import open
+
+# read the contents of README.md
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="motmot.FlyMovieFormat",
-    description="support for .fmf (fly movie format) files",
-    long_description="""'Fly movie format' (or .fmf) files are a
-simple, uncompressed video format for storing data from digital video
-cameras. A fixed-size per frame means that random access is extremely
-fast, and a variety of formats (e.g. MONO8, YUV422) are supported.
-
-This is a subpackage of the motmot family of digital image utilities.
-""",
     version="1.8",
+    description="support for .fmf (fly movie format) files",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Andrew Straw",
     author_email="strawman@astraw.com",
     license="BSD",
