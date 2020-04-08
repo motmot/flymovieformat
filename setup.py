@@ -10,7 +10,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="motmot.FlyMovieFormat",
-    version="1.8",
+    version="1.9",
     description="support for .fmf (fly movie format) files",
     long_description=long_description,
     long_description_content_type="text/markdown",
