@@ -21,15 +21,12 @@ setup(
     packages=["motmot", "motmot.FlyMovieFormat"],
     package_data={
         "motmot.FlyMovieFormat": [
-            "playfmf.xrc",
-            "matplotlibrc",
             "test_raw8.fmf",
             "test_rgb8.fmf",
             "test_rgb32f.fmf",
             "test_mono8.fmf",
             "test_mono32f.fmf",
             "test_yuv422.fmf",
-            "description.txt",
         ]
     },
     scripts=["scripts/pvn2fmf"],
@@ -43,14 +40,7 @@ setup(
             "ffmpeg2fmf = motmot.FlyMovieFormat.ffmpeg2fmf:main",
         ],
         "gui_scripts": [
-            "playfmf = motmot.FlyMovieFormat.playfmf:main",
             "fmf_plottimestamps = motmot.FlyMovieFormat.fmf_plottimestamps:main",
-            "fmf_tail = motmot.FlyMovieFormat.fmf_tail:main",
-        ],
-        "motmot.FlyMovieFormat.exporter_plugins": [
-            "txt = motmot.FlyMovieFormat.saver_plugins:TxtFileSaverPlugin",
-            "fmf = motmot.FlyMovieFormat.saver_plugins:FmfFileSaverPlugin",
-            "image_sequence = motmot.FlyMovieFormat.saver_plugins:ImageSequenceSaverPlugin",
         ],
     },
 )
