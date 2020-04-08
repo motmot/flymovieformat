@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os, sys
 from . import FlyMovieFormat
-import Image
+import PIL.Image as Image
 import numpy
 
 
@@ -12,14 +12,16 @@ def main():
         filename1 = sys.argv[1]
         filename2 = sys.argv[2]
     except:
-        print("""Usage: fmf_collapse fmf_filename1 fmf_filename2
+        print(
+            """Usage: fmf_collapse fmf_filename1 fmf_filename2
 
 This program takes a set of .fmf files and saves the mean of all
 frames from all files as a .bmp image file.
 
 The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
 
-""")
+"""
+        )
         sys.exit()
 
     path, ext = os.path.splitext(filename1)
@@ -67,7 +69,7 @@ The files used are in the range fmf_filename1 <= FILE <= fmf_filename2.
         save_frame = save_frame.astype(numpy.uint8)
         save_frame = save_frame[::-1, :]  # flip for PIL
         h, w = save_frame.shape
-        im = Image.fromstring("L", (w, h), save_frame.tostring())
+        im = Image.frombytes("L", (w, h), save_frame.tostring())
         f = "cal%02d.bmp" % (imnum + 1)
         print("saving", f)
         im.save(f)

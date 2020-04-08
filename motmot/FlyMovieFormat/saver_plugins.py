@@ -42,15 +42,15 @@ class ImageSequenceSaverPlugin(object):
                     save_frame = save_frame[::-1, :]  # flip
                 if self.format in ["MONO8", "RAW8"]:
                     height, width = save_frame.shape
-                    im = Image.fromstring("L", (width, height), save_frame.tostring())
+                    im = Image.frombytes("L", (width, height), save_frame.tostring())
                 elif self.format in ["MONO32f"]:
                     save_frame = save_frame.astype(numpy.uint8)
                     height, width = save_frame.shape
-                    im = Image.fromstring("L", (width, height), save_frame.tostring())
+                    im = Image.frombytes("L", (width, height), save_frame.tostring())
                 else:
                     rgb8 = imops.to_rgb8(self.format, save_frame)
                     height, width, depth = rgb8.shape
-                    im = Image.fromstring("RGB", (width, height), rgb8.tostring())
+                    im = Image.frombytes("RGB", (width, height), rgb8.tostring())
                 im.save(fname)
 
             def close(self):

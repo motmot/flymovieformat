@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import os, sys
 from . import FlyMovieFormat
-import Image
+import PIL.Image as Image
 from optparse import OptionParser
 import motmot.imops.imops as imops
 import warnings
@@ -129,9 +129,9 @@ def fmf2images(
             mono = True
         h, w = save_frame.shape[:2]
         if mono:
-            im = Image.fromstring("L", (w, h), save_frame.tostring())
+            im = Image.frombytes("L", (w, h), save_frame.tostring())
         else:
-            im = Image.fromstring("RGB", (w, h), save_frame.tostring())
+            im = Image.frombytes("RGB", (w, h), save_frame.tostring())
         f = "%s_%08d.%s" % (os.path.join(outdir, base), frame_number, imgformat)
         im.save(f)
     if pbar is not None:

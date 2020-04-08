@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from . import FlyMovieFormat
-import Image
+import PIL.Image as Image
 import numpy as np
 import argparse
 
@@ -41,7 +41,7 @@ def images2fmf(input_filenames, out_fname, version=3):
         else:
             assert im_size == im.size
             assert im_mode == im.mode
-        buf = im.tostring()
+        buf = im.tobytes()
 
         if fmf_out is None:
             fmf_out = FlyMovieFormat.FlyMovieSaver(
@@ -49,10 +49,10 @@ def images2fmf(input_filenames, out_fname, version=3):
             )
 
         if im.mode == "L":
-            data = np.fromstring(buf, dtype=np.uint8)
+            data = np.frombuffer(buf, dtype=np.uint8)
             data.shape = (im.size[1], im.size[0])
         elif im.mode == "RGB":
-            data = np.fromstring(buf, dtype=np.uint8)
+            data = np.frombuffer(buf, dtype=np.uint8)
             data.shape = (im.size[1], im.size[0], 3)
         else:
             raise NotImplementedError("no support for mode %r" % im.mode)

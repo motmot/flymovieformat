@@ -190,7 +190,7 @@ def get_test_suite():
 
 
 if __name__ == "__main__":
-    if 1:
+    if 0:
         ts = get_test_suite()
         ts.debug()
     else:
