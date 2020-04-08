@@ -219,9 +219,13 @@ class FlyMovie:
     def close(self):
         if self.opened_file:
             self.file.close()
+            self.opened_file = False
         self.writeable = False
         self.n_frames = None
         self.next_frame = None
+
+    def __del__(self):
+        self.close()
 
     def get_width(self):
         """returns width of data, in bytes
